@@ -1,0 +1,32 @@
+:root {
+  --page-bg: #15191f;
+  --title: #e8edf3;
+  --tab-bg: #232a33;
+  --tab-text: #b9c3cf;
+  --tab-count: #75818f;
+  --tab-active-bg: #3d6a9e;
+  --tab-active-text: #ffffff;
+  --tab-active-count: #c9dcf2;
+  --card-bg: #1d232b;
+  --card-border: #2e3742;
+  --card-hover: #4f7fb5;
+  --name: #e8edf3;
+  --desc: #93a0ae;
+  --portion-bg: #29313b;
+  --portion-text: #cfd7e0;
+  --portion-price: #8fb8e8;
+  --portion-hover: #323c48;
+  --accent: #2f6db0;
+  --accent-hover: #3a80cb;
+  --accent-text: #ffffff;
+  --control-bg: #232a33;
+  --control-border: #333d4a;
+  --control-text: #e8edf3;
+  --muted: #75818f;
+  --disabled-bg: #242b34;
+  --disabled-text: #5a6573;
+}
+
+body {
+  background: var(--page-bg);
+}

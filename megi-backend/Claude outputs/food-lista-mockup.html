@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Megi — food lista mockup</title>
+<style>
+  :root{
+    --bg:#f4f1ec; --panel:#ffffff; --ink:#1d1b18; --muted:#6f6a62; --line:#e6e1d8;
+    --accent:#c2551b; --accent-soft:#fbe9dd; --ok:#2f7d4f; --off:#b9b3a9; --chip:#f1ede6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .app{display:grid;grid-template-columns:1fr 360px;height:100vh;min-height:640px}
+  /* ---------- top bar ---------- */
+  header{grid-column:1/-1;display:flex;align-items:center;gap:16px;padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+  .back{border:1px solid var(--line);background:none;border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer}
+  .table-badge{font-weight:700;font-size:18px}
+  .table-badge small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+  .delivery{background:var(--accent);color:#fff;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;margin-left:6px;vertical-align:2px}
+  header .spacer{flex:1}
+  .waiter{color:var(--muted);font-size:14px}
+  .app{grid-template-rows:auto 1fr}
+  /* ---------- menu side ---------- */
+  main{display:flex;flex-direction:column;min-height:0;padding:16px 20px;gap:14px}
+  .toolbar{display:flex;gap:10px;align-items:center}
+  .tabs{display:flex;background:var(--chip);border-radius:12px;padding:4px}
+  .tab{border:0;background:none;padding:9px 18px;border-radius:9px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}
+  .tab.active{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .search{flex:1;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font:inherit;background:var(--panel)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;overflow:auto;padding-bottom:8px;align-content:start}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:118px;transition:border-color .15s, transform .1s}
+  .card:hover{border-color:var(--accent)}
+  .card:active{transform:scale(.98)}
+  .card.selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .card.unavailable{cursor:not-allowed;opacity:.55}
+  .card h3{margin:0;font-size:16px}
+  .card p{margin:0;color:var(--muted);font-size:13px;flex:1}
+  .card .meta{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+  .price{font-weight:700}
+  .tag{font-size:11px;background:var(--chip);border-radius:6px;padding:2px 6px;color:var(--muted)}
+  .tag.off{background:#eee;color:#8a8479}
+  /* ---------- detail sheet ---------- */
+  .sheet{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:none;gap:14px;flex-direction:column}
+  .sheet.open{display:flex}
+  .sheet-head{display:flex;justify-content:space-between;align-items:start;gap:12px}
+  .sheet-head h2{margin:0;font-size:20px}
+  .sheet-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+  .x{border:0;background:var(--chip);border-radius:9px;width:34px;height:34px;font-size:18px;cursor:pointer}
+  .label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
+  .row{display:flex;flex-wrap:wrap;gap:8px}
+  .pill{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 14px;font:inherit;cursor:pointer;display:flex;gap:8px;align-items:center}
+  .pill span{color:var(--muted);font-size:13px}
+  .pill.on{border-color:var(--accent);background:var(--accent-soft)}
+  .pill.on span{color:var(--accent)}
+  .sheet-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .qty button{border:0;background:var(--chip);width:44px;height:44px;font-size:20px;cursor:pointer}
+  .qty b{min-width:40px;text-align:center}
+  .note{flex:1;min-width:160px;border:1px solid var(--line);border-radius:12px;padding:11px 14px;font:inherit}
+  .add{border:0;background:var(--accent);color:#fff;border-radius:12px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer}
+  /* ---------- cart ---------- */
+  aside{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  aside h2{margin:0;padding:16px 18px 10px;font-size:17px}
+  .cart{flex:1;overflow:auto;padding:0 18px}
+  .sec{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:14px 0 6px}
+  .line{display:grid;grid-template-columns:30px 1fr auto;gap:8px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .line .q{font-weight:700}
+  .line .d{font-size:12px;color:var(--muted)}
+  .line .n{font-size:12px;color:var(--accent)}
+  .line .r{text-align:right}
+  .line .rm{border:0;background:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0}
+  .status{font-size:11px;border-radius:6px;padding:1px 6px;background:#e7f3ec;color:var(--ok)}
+  .empty{color:var(--muted);font-size:14px;padding:18px 0}
+  .total{padding:14px 18px;border-top:1px solid var(--line)}
+  .total div{display:flex;justify-content:space-between}
+  .total .big{font-size:22px;font-weight:800;margin-top:4px}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 18px 18px}
+  .btn{border-radius:12px;padding:14px;font:inherit;font-weight:700;cursor:pointer;border:1px solid var(--line);background:var(--panel)}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .hint{font-size:12px;color:var(--muted);padding:0 18px 12px}
+  @media (max-width:900px){
+    .app{grid-template-columns:1fr;height:auto}
+    aside{border-left:0;border-top:1px solid var(--line)}
+    main{padding:12px 16px}
+    .actions{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <button class="back">← Stolovi</button>
+    <div class="table-badge">DOSTAVA <span class="delivery">narudžba #128</span><small>otvoreno 12:41 · već poslano na print</small></div>
+    <div class="spacer"></div>
+    <div class="waiter">Konobar: <b>Ana</b></div>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <div class="tabs">
+        <button class="tab active">Jela</button>
+        <button class="tab">Pića</button>
+        <button class="tab">Dodaci</button>
+      </div>
+      <input class="search" id="search" placeholder="Traži jelo…">
+    </div>
+
+    <section class="sheet" id="sheet">
+      <div class="sheet-head">
+        <div><h2 id="sName"></h2><p id="sDesc"></p></div>
+        <button class="x" id="close" aria-label="Zatvori">×</button>
+      </div>
+      <div><div class="label">Porcija</div><div class="row" id="portions"></div></div>
+      <div id="optWrap"><div class="label">Opcije (doplata)</div><div class="row" id="options"></div></div>
+      <div class="sheet-foot">
+        <div class="qty"><button id="minus">−</button><b id="qty">1</b><button id="plus">+</button></div>
+        <input class="note" id="note" placeholder="Napomena za kuhinju (npr. bez luka)">
+        <button class="add" id="add">Dodaj · <span id="linePrice"></span></button>
+      </div>
+    </section>
+
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <aside>
+    <h2>Narudžba</h2>
+    <div class="cart" id="cart"></div>
+    <div class="total">
+      <div><span>Poslano</span><span id="sentTotal"></span></div>
+      <div><span>Nove stavke</span><span id="newTotal"></span></div>
+      <div class="big"><span>Ukupno</span><span id="grand"></span></div>
+    </div>
+    <div class="hint">"Naruči" šalje nove stavke u kuhinju i šank (POST /submit s orderId). "Račun" zatvara dostavu.</div>
+    <div class="actions">
+      <button class="btn" id="bill">Račun</button>
+      <button class="btn primary" id="submit">Naruči</button>
+    </div>
+  </aside>
+</div>
+
+<script>
+// podaci u obliku FoodResponse iz GET /api/food?onlyAvailable=false
+const FOOD = [
+  {id:1,name:"Ćevapi",description:"U lepini, s lukom i kajmakom",available:true,
+   portions:[{id:1,size:"Mala",price:6.00},{id:2,size:"Srednja",price:8.00},{id:3,size:"Velika",price:10.50}],
+   options:[{id:1,name:"Cijela lepina",extraPrice:1.50,portionId:1,portionSize:"Mala"},{id:2,name:"Dodatni kajmak",extraPrice:1.00}]},
+  {id:2,name:"Pljeskavica",description:"Punjena sirom, pomfrit",available:true,
+   portions:[{id:4,size:"Standardna",price:9.00}],options:[{id:3,name:"Ljuto",extraPrice:0},{id:4,name:"Dupli sir",extraPrice:1.50}]},
+  {id:3,name:"Miješano meso",description:"Za dvije osobe",available:true,
+   portions:[{id:5,size:"Standardna",price:24.00}],options:[]},
+  {id:4,name:"Piletina na žaru",description:"S grilanim povrćem",available:true,
+   portions:[{id:6,size:"Standardna",price:11.00}],options:[{id:5,name:"Umjesto povrća pomfrit",extraPrice:0}]},
+  {id:5,name:"Teleća čorba",description:"Domaća",available:true,
+   portions:[{id:7,size:"Mala",price:3.50},{id:8,size:"Velika",price:5.00}],options:[]},
+  {id:6,name:"Šopska salata",description:"",available:true,
+   portions:[{id:9,size:"Standardna",price:4.50}],options:[]},
+  {id:7,name:"Pastrva",description:"Nema danas",available:false,
+   portions:[{id:10,size:"Standardna",price:14.00}],options:[]},
+  {id:8,name:"Pomfrit",description:"",available:true,
+   portions:[{id:11,size:"Mala",price:2.50},{id:12,size:"Velika",price:3.50}],options:[]},
+];
+const eur = v => v.toFixed(2).replace(".", ",") + " €";
+
+// već poslane stavke (status SENT)
+const sent = [
+  {qty:2,name:"Ćevapi",detail:"Velika",price:10.50},
+  {qty:1,name:"Šopska salata",detail:"Standardna",price:4.50},
+];
+let cart = [];
+let sel = null;
+
+const $ = id => document.getElementById(id);
+
+function renderGrid(){
+  const q = $("search").value.toLowerCase();
+  $("grid").innerHTML = "";
+  FOOD.filter(f => f.name.toLowerCase().includes(q)).forEach(f => {
+    const min = Math.min(...f.portions.map(p => p.price));
+    const b = document.createElement("button");
+    b.className = "card" + (f.available ? "" : " unavailable") + (sel && sel.food.id === f.id ? " selected" : "");
+    b.innerHTML = `<h3>${f.name}</h3><p>${f.description || "&nbsp;"}</p>
+      <div class="meta"><span class="price">${f.portions.length > 1 ? "od " : ""}${eur(min)}</span>
+      ${f.available ? `<span class="tag">${f.portions.length} ${f.portions.length === 1 ? "porcija" : "porcije"}</span>` : `<span class="tag off">Nije dostupno</span>`}</div>`;
+    if (f.available) b.onclick = () => openSheet(f);
+    $("grid").appendChild(b);
+  });
+}
+
+function openSheet(f){
+  sel = {food:f, portion:f.portions[0], options:new Set(), qty:1};
+  $("note").value = "";
+  $("sName").textContent = f.name;
+  $("sDesc").textContent = f.description;
+  $("sheet").classList.add("open");
+  renderSheet(); renderGrid();
+}
+
+function validOptions(){
+  return sel.food.options.filter(o => !o.portionId || o.portionId === sel.portion.id);
+}
+
+function renderSheet(){
+  const f = sel.food;
+  $("portions").innerHTML = "";
+  f.portions.forEach(p => {
+    const b = document.createElement("button");
+    b.className = "pill" + (p.id === sel.portion.id ? " on" : "");
+    b.innerHTML = `${p.size} <span>${eur(p.price)}</span>`;
+    b.onclick = () => { sel.portion = p; sel.options = new Set([...sel.options].filter(id => validOptions().some(o => o.id === id))); renderSheet(); };
+    $("portions").appendChild(b);
+  });
+  const opts = validOptions();
+  $("optWrap").style.display = opts.length ? "" : "none";
+  $("options").innerHTML = "";
+  opts.forEach(o => {
+    const b = document.createElement("button");
+    b.className = "pill" + (sel.options.has(o.id) ? " on" : "");
+    b.innerHTML = `${o.name} <span>${o.extraPrice ? "+" + eur(o.extraPrice) : "bez doplate"}</span>`;
+    b.onclick = () => { sel.options.has(o.id) ? sel.options.delete(o.id) : sel.options.add(o.id); renderSheet(); };
+    $("options").appendChild(b);
+  });
+  $("qty").textContent = sel.qty;
+  $("linePrice").textContent = eur(unit() * sel.qty);
+}
+
+function unit(){
+  return sel.portion.price + validOptions().filter(o => sel.options.has(o.id)).reduce((s, o) => s + (o.extraPrice || 0), 0);
+}
+
+function renderCart(){
+  const c = $("cart"); c.innerHTML = "";
+  c.insertAdjacentHTML("beforeend", `<div class="sec">Poslano <span class="status">SENT</span></div>`);
+  sent.forEach(l => c.insertAdjacentHTML("beforeend",
+    `<div class="line"><span class="q">${l.qty}×</span><div>${l.name}<div class="d">${l.detail}</div></div><div class="r">${eur(l.qty * l.price)}</div></div>`));
+  c.insertAdjacentHTML("beforeend", `<div class="sec">Nove stavke</div>`);
+  if (!cart.length) c.insertAdjacentHTML("beforeend", `<div class="empty">Odaberi jelo s lijeve strane.</div>`);
+  cart.forEach((l, i) => {
+    c.insertAdjacentHTML("beforeend",
+      `<div class="line"><span class="q">${l.qty}×</span><div>${l.name}<div class="d">${[l.detail, ...l.opts].join(" · ")}</div>${l.note ? `<div class="n">„${l.note}"</div>` : ""}</div>
+       <div class="r">${eur(l.qty * l.price)}<br><button class="rm" data-i="${i}">ukloni</button></div></div>`);
+  });
+  c.querySelectorAll(".rm").forEach(b => b.onclick = () => { cart.splice(+b.dataset.i, 1); renderCart(); });
+  const s = sent.reduce((a, l) => a + l.qty * l.price, 0);
+  const n = cart.reduce((a, l) => a + l.qty * l.price, 0);
+  $("sentTotal").textContent = eur(s);
+  $("newTotal").textContent = eur(n);
+  $("grand").textContent = eur(s + n);
+  $("submit").disabled = !cart.length;
+  $("submit").textContent = cart.length ? `Naruči (${cart.reduce((a, l) => a + l.qty, 0)})` : "Naruči";
+  $("bill").disabled = cart.length > 0;
+  $("bill").title = cart.length ? "Prvo pošalji ili ukloni nove stavke" : "";
+}
+
+$("search").oninput = renderGrid;
+$("close").onclick = () => { sel = null; $("sheet").classList.remove("open"); renderGrid(); };
+$("minus").onclick = () => { if (sel.qty > 1) { sel.qty--; renderSheet(); } };
+$("plus").onclick = () => { sel.qty++; renderSheet(); };
+$("add").onclick = () => {
+  const opts = validOptions().filter(o => sel.options.has(o.id));
+  cart.push({qty:sel.qty, name:sel.food.name, detail:sel.portion.size, opts:opts.map(o => o.name), note:$("note").value.trim(), price:unit()});
+  sel = null; $("sheet").classList.remove("open"); renderGrid(); renderCart();
+};
+$("submit").onclick = () => {
+  cart.forEach(l => sent.push({qty:l.qty, name:l.name, detail:[l.detail, ...l.opts].join(" · "), price:l.price}));
+  cart = []; renderCart();
+};
+
+renderGrid(); renderCart();
+</script>
+</body>
+</html>

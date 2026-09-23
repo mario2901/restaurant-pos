@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Megi — hrana, prijedlozi boja</title>
+<style>
+  /* ============ TEME: mijenjaju se SAMO boje ============ */
+  :root, [data-theme="topla"]{
+    --page-bg:#f6f1ea; --title:#3b2a1e;
+    --tab-bg:#ebe2d6; --tab-text:#5c4636; --tab-count:#9a8272;
+    --tab-active-bg:#b5541c; --tab-active-text:#ffffff; --tab-active-count:#f7d9c4;
+    --card-bg:#ffffff; --card-border:#e3d6c6; --card-hover:#b5541c;
+    --name:#2b1d14; --desc:#7a6656;
+    --portion-bg:#f4e6d8; --portion-text:#5c4636; --portion-price:#9c4516; --portion-hover:#ecd3bd;
+  }
+  [data-theme="sank"]{
+    --page-bg:#16191d; --title:#f2ede4;
+    --tab-bg:#252a30; --tab-text:#c9c3b8; --tab-count:#7d8590;
+    --tab-active-bg:#e0a13a; --tab-active-text:#1a1a1a; --tab-active-count:#5a3f10;
+    --card-bg:#1f2328; --card-border:#30363d; --card-hover:#e0a13a;
+    --name:#f2ede4; --desc:#9aa3ad;
+    --portion-bg:#2c3238; --portion-text:#d6d0c6; --portion-price:#f0b44c; --portion-hover:#363d45;
+  }
+  [data-theme="maslina"]{
+    --page-bg:#f2f3ee; --title:#26301f;
+    --tab-bg:#e1e5d8; --tab-text:#4a5540; --tab-count:#86907a;
+    --tab-active-bg:#4f6b3a; --tab-active-text:#ffffff; --tab-active-count:#d5e3c7;
+    --card-bg:#ffffff; --card-border:#d7dccd; --card-hover:#4f6b3a;
+    --name:#1f2819; --desc:#6b7561;
+    --portion-bg:#e8eddf; --portion-text:#3f4a36; --portion-price:#3d5a2a; --portion-hover:#dbe3cd;
+  }
+  [data-theme="more"]{
+    --page-bg:#eef3f7; --title:#14304a;
+    --tab-bg:#dbe5ee; --tab-text:#35506a; --tab-count:#7d93a8;
+    --tab-active-bg:#1f5f8b; --tab-active-text:#ffffff; --tab-active-count:#c6dcec;
+    --card-bg:#ffffff; --card-border:#cfdbe6; --card-hover:#1f5f8b;
+    --name:#10273c; --desc:#5f7488;
+    --portion-bg:#e4edf5; --portion-text:#2c4760; --portion-price:#c0512a; --portion-hover:#d4e2ee;
+  }
+
+  /* ============ prebacivanje tema (nije dio aplikacije) ============ */
+  .switcher{position:sticky;top:0;z-index:10;display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 16px;background:#111;color:#fff;font:13px system-ui,sans-serif}
+  .switcher button{border:1px solid #444;background:#222;color:#fff;border-radius:999px;padding:6px 12px;font:inherit;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .switcher button.on{background:#fff;color:#111}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(255,255,255,.4)}
+
+  /* ============ tvoj raspored, samo s varijablama boja ============ */
+  body{margin:0;background:var(--page-bg)}
+  .page{padding:24px 24px 40px}
+  h2{text-align:center;color:var(--title);margin:26px 0 56px}
+
+  .tabs{display:flex;justify-content:space-around;margin:0 12% 40px}
+  .tab{display:flex;align-items:center;gap:8px;padding:10px 18px;border:none;border-radius:8px;
+       background:var(--tab-bg);color:var(--tab-text);font-weight:600;cursor:pointer;font-family:system-ui,sans-serif}
+  .tab .count{font-size:12px;font-weight:500;color:var(--tab-count)}
+  .tab.active{background:var(--tab-active-bg);color:var(--tab-active-text)}
+  .tab.active .count{color:var(--tab-active-count)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+  .card{display:flex;flex-direction:column;gap:8px;min-height:180px;padding:16px;border-radius:10px;
+        background:var(--card-bg);border:1px solid var(--card-border);transition:border-color .15s}
+  .card:hover{border-color:var(--card-hover)}
+  .name{margin:0;color:var(--name)}
+  .description{margin:0;flex:1;color:var(--desc)}
+  .portions{display:flex;flex-wrap:wrap;gap:10px}
+  .portionBtn{display:flex;flex-direction:column;align-items:center;min-width:80px;padding:6px 10px;border:none;border-radius:6px;
+              background:var(--portion-bg);color:var(--portion-text);cursor:pointer;font-family:system-ui,sans-serif}
+  .portionBtn:hover{background:var(--portion-hover)}
+  .price{font-size:12px;font-weight:600;color:var(--portion-price)}
+</style>
+</head>
+<body>
+<div class="switcher" id="switcher">
+  <span>Tema:</span>
+  <button data-t="topla" class="on"><span class="dot" style="background:#b5541c"></span>Topla (terakota)</button>
+  <button data-t="maslina"><span class="dot" style="background:#4f6b3a"></span>Maslina</button>
+  <button data-t="more"><span class="dot" style="background:#1f5f8b"></span>More</button>
+  <button data-t="sank"><span class="dot" style="background:#e0a13a"></span>Tamna (šank)</button>
+</div>
+
+<div class="page">
+  <h2>Hrana</h2>
+  <div class="tabs" id="tabs"></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const S = p => [["Standardna", p]];
+const MV = (m, v) => [["Mala", m], ["Velika", v]];
+const MVJ = (m, v, j) => [["Mala", m], ["Velika", v], ["Jambo", j]];
+const DATA = {
+  "Pizza": [
+    ["Pizza Margarita","Paradajz, sir",MVJ(9,11,22)],["Pizza Vesuvio","Paradajz, sir, šunka ili pili",MVJ(10,12,23)],
+    ["Pizza Capricosa","Paradajz, sir, šunka, šampinjoni",MVJ(10,12,23)],["Pizza Diavolo","Paradajz, sir, kobasice, ljuti feferoni",MVJ(10,12,23)],
+    ["Pizza Hungara","Paradajz, sir, šunka, špek, feferoni, jaje",MVJ(11,13,24)],["Pizza Megi","Paradajz, sir, pršut, kulen, masline, kajmak",MVJ(12,14,25)],
+    ["Pizza Pršuto","Paradajz, sir, šunka, pršut, masline",MVJ(12,14,25)],["Pizza Havai","Paradajz, sir, šunka ili pili, ananas",MVJ(10,12,23)],
+  ],
+  "Roštilj": [
+    ["Bečka šnicla","",S(14)],["Cheeseburger","",S(7)],["Gljive na žaru u lepini","",MV(5,7)],
+    ["Gurmanska pljeskavica","Panceta ili goveđa pečenica, luk, paprika, sir",S(15)],
+    ["Gurmanska pljeskavica u pizza tijestu","Iz krušne peći",S(15)],
+    ["Hamburger","",[["Standardni",5.5],["Lepina",6]]],["Kombinacija","",MV(6,10)],["Kotlet sa sirom i šunkom","",S(11)],
+    ["Krpice pileći file","",MV(6,10)],["Krpice svinjske","",MV(6,9)],["Krpice teleće","",MV(8,11)],["Lignje","",MV(15,20)],
+    ["Miješano meso","",[["Standardno",19],["Bez svinjetine",22]]],["Pileći file","Preljev od gljiva",MV(8,12)],["Pljeskavica","",S(11)],
+    ["Pljeskavica Megi","Punjena sirom, šunkom ili pilijem",S(14)],["Pohovani pileći file","",MV(9,12)],
+    ["Punjena piletina","Sir, šunka ili pili",S(12)],["Punjeni batak","Pili salama",S(12)],["Ražnjići svinjski","",MV(6,10)],
+  ],
+  "Doručak": [
+    ["Hrenovke i jaja","",S(8)],["Omlet","Šunka ili pili i gljive",S(7)],["Špek i jaja","",MV(6,8)],
+    ["Topli sendvič","Šunka ili pili",[["Sendvič",4.5],["Lepina",5]]],
+  ],
+  "Ostalo": [
+    ["Mućkalica","",S(9)],["Plata Dea","Za 2 osobe",[["Standardna",27],["Teletina",30]]],
+    ["Plata Megi","Za 4 osobe",[["Standardna",40],["Teletina",45]]],["Plata Megi Dea","Za 6 osoba",[["Standardna",50],["Teletina",55]]],
+    ["Spaghetti Bolognese","",MV(7,9)],["Spaghetti Carbonara","",MV(10,12)],["Spaghetti Plodovi mora","",MV(8,10)],
+  ],
+};
+const COUNTS = { "Pizza":21, "Roštilj":28, "Doručak":4, "Ostalo":8 };
+let active = "Roštilj";
+const km = v => v.toFixed(2).replace(".", ",") + " KM";
+
+function render(){
+  const tabs = document.getElementById("tabs"); tabs.innerHTML = "";
+  Object.keys(DATA).forEach(t => {
+    const b = document.createElement("button");
+    b.className = "tab" + (t === active ? " active" : "");
+    b.innerHTML = `${t}<span class="count">${COUNTS[t]}</span>`;
+    b.onclick = () => { active = t; render(); };
+    tabs.appendChild(b);
+  });
+  document.getElementById("grid").innerHTML = DATA[active].map(([n, d, p]) => `
+    <div class="card">
+      <h3 class="name">${n}</h3>
+      ${d ? `<p class="description">${d}</p>` : ""}
+      <div class="portions">${p.map(([s, pr]) => `<button class="portionBtn"><span>${s}</span><span class="price">${km(pr)}</span></button>`).join("")}</div>
+    </div>`).join("");
+}
+document.getElementById("switcher").addEventListener("click", e => {
+  const b = e.target.closest("button[data-t]"); if (!b) return;
+  document.documentElement.dataset.theme = b.dataset.t;
+  document.querySelectorAll("#switcher button").forEach(x => x.classList.toggle("on", x === b));
+});
+render();
+</script>
+</body>
+</html>

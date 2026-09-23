@@ -1,0 +1,262 @@
+.order {
+  --bg: #ffffff;
+  --surface: #f7f7f8;
+  --border: #e4e4e7;
+  --text: #18181b;
+  --muted: #71717a;
+  --accent: #e8590c;
+  --accent-hover: #d9480f;
+  --danger: #e03131;
+  --radius: 12px;
+
+  display: flex;
+  flex-direction: column;
+
+  flex-shrink: 0;
+
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.count {
+  min-width: 26px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 32px 16px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px 12px;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "info price"
+    "controls controls";
+  gap: 10px 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.item + .item {
+  margin-top: 8px;
+}
+
+.info {
+  grid-area: info;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 600;
+  font-size: 0.98rem;
+  word-break: break-word;
+}
+
+.size {
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.options {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.note {
+  margin-top: 6px;
+  padding: 4px 8px;
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  background: #fff4e6;
+  color: #862e0c;
+  font-size: 0.82rem;
+  font-style: italic;
+  word-break: break-word;
+}
+
+.price {
+  grid-area: price;
+  align-self: start;
+  font-weight: 700;
+  font-size: 0.98rem;
+  white-space: nowrap;
+}
+
+.controls {
+  grid-area: controls;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.stepBtn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.stepBtn:hover {
+  background: var(--surface);
+}
+
+.qty {
+  min-width: 32px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.removeBtn {
+  margin-left: auto;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--danger);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.removeBtn:hover {
+  background: #fff5f5;
+  border-color: #ffc9c9;
+}
+
+.footer {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.totalLabel {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.totalValue {
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.clearBtn,
+.sendBtn {
+  height: 46px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+}
+
+.clearBtn {
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.clearBtn:hover {
+  background: var(--surface);
+}
+
+.sendBtn {
+  flex: 1;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+}
+
+.sendBtn:hover {
+  background: var(--accent-hover);
+}
+
+.clearBtn:disabled,
+.sendBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.stepBtn:focus-visible,
+.removeBtn:focus-visible,
+.clearBtn:focus-visible,
+.sendBtn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

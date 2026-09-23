@@ -1,0 +1,181 @@
+package com.example.megibackend.Service;
+
+import com.example.megibackend.Dto.Ticket;
+import com.example.megibackend.Dto.TicketLine;
+import com.example.megibackend.Dto.TicketType;
+import com.example.megibackend.Entity.*;
+import com.example.megibackend.Exceptions.NotFoundException;
+import com.example.megibackend.Repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Slaganje tiketa za print.
+ *
+ * Pravila (dogovorena kod dizajna modela):
+ *  - kuhinjski tiket: samo hrana, s porcijom i napomenom, BEZ cijena
+ *  - šank tiket: sve stavke s cijenama
+ *  - račun: sve ne-stornirane stavke narudžbe s ukupnim iznosom
+ *  - dostava i za ponijeti: svi tiketi imaju takeaway=true i notice za vrh tiketa
+ *
+ * Servis vraća strukturu podataka, ne formatirani tekst — tako print driver
+ * (ESC/POS, PDF, ili samo prikaz na ekranu) može biti zamijenjen bez diranja logike.
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class TicketService {
+
+    private final OrderRepository orderRepository;
+
+    /**
+     * Tiketi za stavke koje je upravo vratio OrderService.sendNewItems().
+     * Vraća samo one tikete koji imaju redova — ako je konobar naručio
+     * samo piće, kuhinjski tiket se ne generira.
+     */
+    public List<Ticket> forSentItems(Long orderId, List<OrderItem> items) {
+        Order order = getOrder(orderId);
+        List<Ticket> tickets = new ArrayList<>();
+
+        Ticket kitchen = kitchenTicket(order, items);
+        if (!kitchen.isEmpty()) tickets.add(kitchen);
+
+        Ticket bar = barTicket(order, items);
+        if (!bar.isEmpty()) tickets.add(bar);
+
+        return tickets;
+    }
+
+    /** Ponovni print kuhinjskog tiketa za cijelu narudžbu. */
+    public Ticket kitchenTicket(Long orderId) {
+        Order order = getOrder(orderId);
+        return kitchenTicket(order, order.getItems());
+    }
+
+    /** Ponovni print šank tiketa za cijelu narudžbu. */
+    public Ticket barTicket(Long orderId) {
+        Order order = getOrder(orderId);
+        return barTicket(order, order.getItems());
+    }
+
+    /** Račun za stol ili dostavu — sve što se naplaćuje. */
+    public Ticket bill(Long orderId) {
+        return bill(getOrder(orderId));
+    }
+
+    private Ticket bill(Order order) {
+        List<TicketLine> lines = active(order.getItems()).stream()
+                .map(this::pricedLine)
+                .toList();
+
+        return new Ticket(TicketType.BILL, order.getId(), order.getTable(), waiterName(order),
+                LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order));
+    }
+
+    // ==================== SLAGANJE TIKETA ====================
+
+    private Ticket kitchenTicket(Order order, List<OrderItem> items) {
+        List<TicketLine> lines = active(items).stream()
+                .filter(FoodOrderItem.class::isInstance)
+                .map(FoodOrderItem.class::cast)
+                .map(this::kitchenLine)
+                .toList();
+
+        return new Ticket(TicketType.KITCHEN, order.getId(), order.getTable(), waiterName(order),
+                LocalDateTime.now(), lines, null, order.isPacked(), notice(order));
+    }
+
+    private Ticket barTicket(Order order, List<OrderItem> items) {
+        List<TicketLine> lines = active(items).stream()
+                .map(this::pricedLine)
+                .toList();
+
+        return new Ticket(TicketType.BAR, order.getId(), order.getTable(), waiterName(order),
+                LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order));
+    }
+
+    /** Kuhinja: porcija, opcije i napomena da kuhar zna što radi — cijena ga ne zanima. */
+    private TicketLine kitchenLine(FoodOrderItem item) {
+        String detail = joinDetail(portionSize(item), optionNames(item), item.getNote());
+        return new TicketLine(item.getQuantity(), nameOf(item), detail, null);
+    }
+
+    private TicketLine pricedLine(OrderItem item) {
+        String detail = (item instanceof FoodOrderItem food)
+                ? joinDetail(portionSize(food), optionNames(food))
+                : null;
+        return new TicketLine(item.getQuantity(), nameOf(item), detail, item.getLineTotal());
+    }
+
+    // ==================== POMOĆNE METODE ====================
+
+    private Order getOrder(Long orderId) {
+        return orderRepository.findByIdWithItems(orderId)
+                .orElseThrow(() -> new NotFoundException("Narudžba " + orderId + " ne postoji."));
+    }
+
+    private List<OrderItem> active(List<OrderItem> items) {
+        if (items == null) return List.of();
+        return items.stream()
+                .filter(i -> i.getStatus() != ItemStatus.CANCELLED)
+                .toList();
+    }
+
+    private String nameOf(OrderItem item) {
+        if (item instanceof FoodOrderItem food && food.getFood() != null) {
+            return food.getFood().getName();
+        }
+        if (item instanceof DrinkOrderItem drink && drink.getDrink() != null) {
+            return drink.getDrink().getName();
+        }
+        if (item instanceof AddonOrderItem addon && addon.getAddon() != null) {
+            return addon.getAddon().getName();
+        }
+        return "Stavka";
+    }
+
+    private String portionSize(FoodOrderItem item) {
+        return item.getPortion() != null ? item.getPortion().getSize() : null;
+    }
+
+    /** Odabrane opcije, npr. "Cijela lepina, Ljuto". */
+    private String optionNames(FoodOrderItem item) {
+        if (item.getOptions() == null || item.getOptions().isEmpty()) return null;
+        return item.getOptions().stream()
+                .map(FoodOption::getName)
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.joining(", "));
+    }
+
+    /** Spaja porciju, opcije i napomenu u jedan redak, preskačući prazne dijelove. */
+    private String joinDetail(String... parts) {
+        String detail = java.util.Arrays.stream(parts)
+                .filter(p -> p != null && !p.isBlank())
+                .collect(java.util.stream.Collectors.joining(" — "));
+        return detail.isBlank() ? null : detail;
+    }
+
+    /** Napomena na vrhu tiketa da kuhinja/šank zna da se pakira. */
+    private String notice(Order order) {
+        if (order.isDelivery()) return "DOSTAVA — ZA PONIJETI";
+        if (order.isTakeaway()) return "ZA PONIJETI";
+        return null;
+    }
+
+    private String waiterName(Order order) {
+        return order.getUser() != null ? order.getUser().getName() : null;
+    }
+
+    private BigDecimal sum(List<TicketLine> lines) {
+        return lines.stream()
+                .map(TicketLine::lineTotal)
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+}

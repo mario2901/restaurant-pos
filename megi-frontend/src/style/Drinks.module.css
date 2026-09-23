@@ -1,0 +1,79 @@
+.categoryFilter {
+  display: flex;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 40px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: #232a33;
+  color: #b9c3cf;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.tab:hover {
+  background-color: #2b3440;
+}
+
+.tabActive,
+.tabActive:hover {
+  background-color: #3d6a9e;
+  color: #ffffff;
+}
+
+.count {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 4rem;
+  padding: 1.5rem;
+  border-radius: 10px;
+  background-color: #1d232b;
+  color: #e8edf3;
+  border: 1px solid #2e3742;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.card:hover {
+  border-color: #4f7fb5;
+}
+
+.name {
+  margin: 0;
+  color: #e8edf3;
+  text-align: left;
+}
+
+.price {
+  align-self: flex-start;
+  color: #93a0ae;
+  font-weight: 600;
+}
+
+.info {
+  color: #93a0ae;
+  text-align: center;
+}

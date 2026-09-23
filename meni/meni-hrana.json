@@ -1,0 +1,1318 @@
+[
+  {
+    "category": "Doručak",
+    "name": "Omlet",
+    "description": "Šunka ili pili i gljive",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 7
+      }
+    ],
+    "options": [
+      {
+        "name": "Šunka",
+        "extraPrice": 0
+      },
+      {
+        "name": "Pili",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Doručak",
+    "name": "Špek i jaja",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 6
+      },
+      {
+        "size": "Velika",
+        "price": 8
+      }
+    ],
+    "options": []
+  },
+  {
+    "category": "Doručak",
+    "name": "Hrenovke i jaja",
+    "description": "",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 8
+      }
+    ],
+    "options": []
+  },
+  {
+    "category": "Doručak",
+    "name": "Topli sendvič",
+    "description": "Šunka ili pili",
+    "portions": [
+      {
+        "size": "Sendvič",
+        "price": 4.5
+      },
+      {
+        "size": "Lepina",
+        "price": 5
+      }
+    ],
+    "options": [
+      {
+        "name": "Šunka",
+        "extraPrice": 0
+      },
+      {
+        "name": "Pili",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Kuhano jelo",
+    "name": "Mućkalica",
+    "description": "",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 9
+      }
+    ],
+    "options": []
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Margarita",
+    "description": "Paradajz, sir",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 9
+      },
+      {
+        "size": "Velika",
+        "price": 11
+      },
+      {
+        "size": "Jambo",
+        "price": 22
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Vesuvio",
+    "description": "Paradajz, sir, šunka ili pili",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Šunka",
+        "extraPrice": 0
+      },
+      {
+        "name": "Pili",
+        "extraPrice": 0
+      },
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Capricosa",
+    "description": "Paradajz, sir, šunka, šampinjoni",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza All Fungi",
+    "description": "Paradajz, sir, šampinjoni",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Diavolo",
+    "description": "Paradajz, sir, kobasice, ljuti feferoni",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Tiroleze",
+    "description": "Paradajz, sir, špek, šunka",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Hungara",
+    "description": "Paradajz, sir, šunka, špek, feferoni, jaje",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 11
+      },
+      {
+        "size": "Velika",
+        "price": 13
+      },
+      {
+        "size": "Jambo",
+        "price": 24
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Napolitana",
+    "description": "Paradajz, sir, šunka ili pili, šampinjoni, jaje, vrhnje",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 11
+      },
+      {
+        "size": "Velika",
+        "price": 13
+      },
+      {
+        "size": "Jambo",
+        "price": 24
+      }
+    ],
+    "options": [
+      {
+        "name": "Šunka",
+        "extraPrice": 0
+      },
+      {
+        "name": "Pili",
+        "extraPrice": 0
+      },
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Boris",
+    "description": "Paradajz, sir, šunka, šampinjoni, kobasice, špek",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Pili",
+    "description": "Paradajz, sir, pileća šunka, šampinjoni",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Tuno di Mare",
+    "description": "Paradajz, sir, tunjevina, bijeli luk, origano, masline",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Havai",
+    "description": "Paradajz, sir, šunka ili pili, ananas",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Šunka",
+        "extraPrice": 0
+      },
+      {
+        "name": "Pili",
+        "extraPrice": 0
+      },
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Bio",
+    "description": "Paradajz, sir, luk, kukuruz, paprika, paradajz",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Plodovi mora",
+    "description": "Paradajz, sir, plodovi mora",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Bolognese",
+    "description": "Sir, šampinjoni, bolognese sos",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Sardina",
+    "description": "Paradajz, sir, sardina, luk",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Vodopad",
+    "description": "Paradajz, sir, goveđa pečenica, pili salama",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 11
+      },
+      {
+        "size": "Velika",
+        "price": 13
+      },
+      {
+        "size": "Jambo",
+        "price": 24
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Suđuka",
+    "description": "Paradajz, sir, suđuk, pili salama",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Pršuto",
+    "description": "Paradajz, sir, šunka, pršut, masline",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 12
+      },
+      {
+        "size": "Velika",
+        "price": 14
+      },
+      {
+        "size": "Jambo",
+        "price": 25
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Slavonska",
+    "description": "Paradajz, sir, šunka, kulen",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      },
+      {
+        "size": "Jambo",
+        "price": 23
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Pizza",
+    "name": "Pizza Megi",
+    "description": "Paradajz, sir, pršut, kulen, masline, kajmak",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 12
+      },
+      {
+        "size": "Velika",
+        "price": 14
+      },
+      {
+        "size": "Jambo",
+        "price": 25
+      }
+    ],
+    "options": [
+      {
+        "name": "Kukuruz",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Spaghetti",
+    "name": "Spaghetti Bolognese",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 7
+      },
+      {
+        "size": "Velika",
+        "price": 9
+      }
+    ],
+    "options": []
+  },
+  {
+    "category": "Spaghetti",
+    "name": "Spaghetti Plodovi mora",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 8
+      },
+      {
+        "size": "Velika",
+        "price": 10
+      }
+    ],
+    "options": []
+  },
+  {
+    "category": "Spaghetti",
+    "name": "Spaghetti Carbonara",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      }
+    ],
+    "options": []
+  },
+  {
+    "category": "Roštilj",
+    "name": "Ćevapi",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 6
+      },
+      {
+        "size": "Srednja",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      }
+    ],
+    "options": [
+      {
+        "name": "Cijela lepina",
+        "extraPrice": 1,
+        "portionSize": "Mala"
+      },
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Šiš",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 6
+      },
+      {
+        "size": "Velika",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Kombinacija",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 6
+      },
+      {
+        "size": "Velika",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Pohovani pileći file",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 9
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Punjena piletina",
+    "description": "Sir, šunka ili pili",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 12
+      }
+    ],
+    "options": [
+      {
+        "name": "Šunka",
+        "extraPrice": 0
+      },
+      {
+        "name": "Pili",
+        "extraPrice": 0
+      },
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Pileći file",
+    "description": "Preljev od gljiva",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 8
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Krpice pileći file",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 6
+      },
+      {
+        "size": "Velika",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Rolovani ražnjići",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 8
+      },
+      {
+        "size": "Srednja",
+        "price": 10
+      },
+      {
+        "size": "Velika",
+        "price": 12
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Ražnjići teleći",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 9
+      },
+      {
+        "size": "Velika",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Krpice teleće",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 8
+      },
+      {
+        "size": "Velika",
+        "price": 11
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Ražnjići svinjski",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 6
+      },
+      {
+        "size": "Velika",
+        "price": 10
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Krpice svinjske",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 6
+      },
+      {
+        "size": "Velika",
+        "price": 9
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Miješano meso",
+    "description": "",
+    "portions": [
+      {
+        "size": "Standardno",
+        "price": 19
+      },
+      {
+        "size": "Bez svinjetine",
+        "price": 22
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Velika kombinacija",
+    "description": "",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 13
+      },
+      {
+        "size": "Bez svinjetine",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Pljeskavica",
+    "description": "",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 11
+      }
+    ],
+    "options": [
+      {
+        "name": "Punjena kajmakom",
+        "extraPrice": 3
+      },
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Pljeskavica Megi",
+    "description": "Punjena sirom, šunkom ili pilijem",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "name": "Šunka",
+        "extraPrice": 0
+      },
+      {
+        "name": "Pili",
+        "extraPrice": 0
+      },
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Gurmanska pljeskavica",
+    "description": "Panceta ili goveđa pečenica, luk, paprika, sir",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 15
+      }
+    ],
+    "options": [
+      {
+        "name": "Panceta",
+        "extraPrice": 0
+      },
+      {
+        "name": "Goveđa pečenica",
+        "extraPrice": 0
+      },
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Gurmanska pljeskavica u pizza tijestu",
+    "description": "Iz krušne peći",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 15
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Gljive na žaru u lepini",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 5
+      },
+      {
+        "size": "Velika",
+        "price": 7
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Hamburger",
+    "description": "",
+    "portions": [
+      {
+        "size": "Standardni",
+        "price": 5.5
+      },
+      {
+        "size": "Lepina",
+        "price": 6
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Cheeseburger",
+    "description": "",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 7
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Šnicla teleća",
+    "description": "Preljev od gljiva",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 16
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Bečka šnicla",
+    "description": "",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 14
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Svinjska šnicla",
+    "description": "",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 13
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Kotlet sa sirom i šunkom",
+    "description": "",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 11
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Punjeni batak",
+    "description": "Pili salama",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 12
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Lignje",
+    "description": "",
+    "portions": [
+      {
+        "size": "Mala",
+        "price": 15
+      },
+      {
+        "size": "Velika",
+        "price": 20
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Roštilj",
+    "name": "Zagrebački odrezak",
+    "description": "",
+    "portions": [
+      {
+        "size": "Sa svinjetinom",
+        "price": 17
+      },
+      {
+        "size": "Sa teletinom",
+        "price": 19
+      }
+    ],
+    "options": [
+      {
+        "name": "Riža",
+        "extraPrice": 0
+      }
+    ]
+  },
+  {
+    "category": "Plate",
+    "name": "Plata Megi Dea",
+    "description": "Za 6 osoba",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 50
+      },
+      {
+        "size": "Teletina",
+        "price": 55
+      }
+    ],
+    "options": []
+  },
+  {
+    "category": "Plate",
+    "name": "Plata Megi",
+    "description": "Za 4 osobe",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 40
+      },
+      {
+        "size": "Teletina",
+        "price": 45
+      }
+    ],
+    "options": []
+  },
+  {
+    "category": "Plate",
+    "name": "Plata Dea",
+    "description": "Za 2 osobe",
+    "portions": [
+      {
+        "size": "Standardna",
+        "price": 27
+      },
+      {
+        "size": "Teletina",
+        "price": 30
+      }
+    ],
+    "options": []
+  }
+]

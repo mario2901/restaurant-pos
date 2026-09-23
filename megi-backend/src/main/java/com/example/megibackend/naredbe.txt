@@ -1,0 +1,8 @@
+ignore
+./gradlew build // build
+
+./gradlew nuild -x test // samo compile
+
+./gradlew bootRun // start spring boot
+
+./gradlew clean build

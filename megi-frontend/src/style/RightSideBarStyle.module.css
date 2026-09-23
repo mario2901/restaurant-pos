@@ -1,0 +1,192 @@
+.sidebar {
+  width: 35%;
+  flex-shrink: 0;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(12px, 1.2vw, 20px);
+  border-left: 1px solid #2e3742;
+  background: #1a1f26;
+  color: #e8edf3;
+  box-sizing: border-box;
+}
+
+/* ===== lista narudžbi ===== */
+
+.orders {
+  --card: #232a33;
+  --card-border: #2e3742;
+  --muted: #8b96a5;
+  --accent: #e8590c;
+  --danger: #ff6b6b;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ordersHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ordersTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ordersCount {
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.message,
+.error {
+  margin: 0;
+  padding: 16px 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.error {
+  color: var(--danger);
+}
+
+.orderList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ===== kartica narudžbe ===== */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.table {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.time {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.meta {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--card-border);
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.qty {
+  min-width: 26px;
+  color: var(--accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.itemName {
+  overflow-wrap: anywhere;
+}
+
+.detail {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.note {
+  color: #ffd43b;
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.lineTotal {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cancelled {
+  opacity: 0.5;
+}
+
+.cancelled .itemName,
+.cancelled .lineTotal {
+  text-decoration: line-through;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--card-border);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.total {
+  color: #e8edf3;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

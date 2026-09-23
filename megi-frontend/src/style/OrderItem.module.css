@@ -1,0 +1,199 @@
+.orderItem {
+  position: relative;
+  padding: 1.5rem;
+  border: 1px solid var(--card-border);
+  border-radius: 1rem;
+  background: var(--card-bg);
+}
+
+.orderItem h3 {
+  margin: 0 2.5rem 1.25rem 0;
+  color: var(--title);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.closeBtn:hover {
+  background: var(--control-bg);
+  color: var(--title);
+}
+
+/* ---- porcije / opcije ---- */
+
+.portions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.portionBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  min-width: 5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background-color: var(--portion-bg);
+  color: var(--portion-text);
+  cursor: pointer;
+}
+
+.portionBtn:hover {
+  background-color: var(--portion-hover);
+}
+
+.portionActive {
+  border-color: var(--accent);
+  background-color: var(--portion-hover);
+}
+
+.price {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--portion-price);
+}
+
+.options {
+  padding-top: 1rem;
+}
+
+.optionsTitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* ---- donji red ---- */
+
+.bottom {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 2.75rem;
+  border: 1px solid var(--control-border);
+  border-radius: 999px;
+  background: var(--control-bg);
+  overflow: hidden;
+}
+
+.stepBtn {
+  width: 2.5rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--control-text);
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stepBtn:hover:not(:disabled) {
+  background: var(--portion-hover);
+}
+
+.stepBtn:disabled {
+  color: var(--disabled-text);
+  cursor: default;
+}
+
+.qty {
+  min-width: 2rem;
+  text-align: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--control-text);
+}
+
+.note {
+  flex: 1;
+  min-width: 0;
+  height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--control-border);
+  border-radius: 999px;
+  background: var(--control-bg);
+  color: var(--control-text);
+  font: inherit;
+  font-size: 0.9375rem;
+}
+
+.note::placeholder {
+  color: var(--muted);
+}
+
+.note:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.addBtn {
+  flex-shrink: 0;
+  height: 2.75rem;
+  padding: 0 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--accent);
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.addBtn:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+}
+
+.addBtn:disabled {
+  background-color: var(--disabled-bg);
+  color: var(--disabled-text);
+  cursor: default;
+}
+
+@media (max-width: 34rem) {
+  .bottom {
+    flex-wrap: wrap;
+  }
+
+  .note {
+    order: -1;
+    flex-basis: 100%;
+  }
+
+  .addBtn {
+    flex: 1;
+  }
+}

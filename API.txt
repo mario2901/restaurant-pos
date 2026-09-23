@@ -1,0 +1,15 @@
+POST   /api/users/login              { pin }
+GET    /api/orders/active            sidebar
+POST   /api/orders/open              { table, userId }  -> otvori ili vrati postojeću
+POST   /api/orders/{id}/food         { foodId, portionId, quantity, note, optionIds }
+POST   /api/orders/{id}/drinks       { drinkId, quantity }
+POST   /api/orders/{id}/addons       { addonId, quantity }
+PATCH  /api/orders/{id}/items/{itemId}/quantity
+DELETE /api/orders/{id}/items/{itemId}          neposlano
+POST   /api/orders/{id}/items/{itemId}/cancel   storno
+POST   /api/orders/{id}/send         -> { order, tickets }
+POST   /api/orders/{id}/close | /cancel
+GET    /api/orders/{id}/bill
+GET    /api/food?onlyAvailable=true            + /portions, /options?portionId=
+GET    /api/drinks | /api/addons | /api/users
+GET    /api/reports/today | /day | /month | /range
