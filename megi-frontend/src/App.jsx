@@ -27,7 +27,10 @@ export default function App() {
               />
             )}
           </main>
-          <RightSideBar table={selectedTable}></RightSideBar>
+          <RightSideBar
+            table={selectedTable}
+            onSelectTable={setSelectedTable}
+          ></RightSideBar>
         </div>
       </div>
     </OrderContextProvider>

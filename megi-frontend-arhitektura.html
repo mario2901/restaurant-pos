@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Megi frontend arhitektura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --ink:#1b2622; --muted:#5d6b65; --line:#d6ddd8; --accent:#0e6b5c;
+  --ok-bg:#dcefe5; --ok-fg:#185c3a; --fix-bg:#fbeecb; --fix-fg:#7a4b06; --new-bg:#dde7fa; --new-fg:#1f3f86; --off-bg:#eceae6; --off-fg:#5b5750;
+  --get:#1c7a4a; --post:#2456b8; --put:#6d3fb3; --patch:#a2620a; --del:#b3322b;
+  --paper:#fbfbf7; --paper-ink:#222;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121816; --surface:#1a2320; --ink:#e3ebe7; --muted:#9aaaa3; --line:#2c3833; --accent:#4fc3a8;
+  --ok-bg:#183a2a; --ok-fg:#8fe0b6; --fix-bg:#3a2e12; --fix-fg:#f3c96b; --new-bg:#1c2a48; --new-fg:#a9c2ff; --off-bg:#2a2a27; --off-fg:#bdb8ae;
+  --get:#5fd39a; --post:#7ea6ff; --put:#c3a0ff; --patch:#f0b04a; --del:#ff8a80;
+  --paper:#e9e9e2; --paper-ink:#1a1a1a; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#121816; --surface:#1a2320; --ink:#e3ebe7; --muted:#9aaaa3; --line:#2c3833; --accent:#4fc3a8;
+  --ok-bg:#183a2a; --ok-fg:#8fe0b6; --fix-bg:#3a2e12; --fix-fg:#f3c96b; --new-bg:#1c2a48; --new-fg:#a9c2ff; --off-bg:#2a2a27; --off-fg:#bdb8ae;
+  --get:#5fd39a; --post:#7ea6ff; --put:#c3a0ff; --patch:#f0b04a; --del:#ff8a80;
+  --paper:#e9e9e2; --paper-ink:#1a1a1a; color-scheme:dark;}
+body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:32px 64px;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:30px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:21px;font-weight:600;display:flex;align-items:baseline;gap:10px}
+h2 small{font-size:13px;color:var(--muted);font-weight:400}
+h3{font-size:16px;font-weight:600}
+p{margin:0}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px}
+.lede{color:var(--muted);max-width:70ch;margin-top:8px}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+section{display:flex;flex-direction:column;gap:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.stat b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.chip{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.s-ok{background:var(--ok-bg);color:var(--ok-fg)} .s-fix{background:var(--fix-bg);color:var(--fix-fg)} .s-new{background:var(--new-bg);color:var(--new-fg)} .s-off{background:var(--off-bg);color:var(--off-fg)}
+.diagram{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+.diagram pre{margin:0;min-width:1000px}
+.gaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.gap{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--fix-fg);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.gap.crit{border-left-color:var(--del)}
+.gap p{color:var(--muted);font-size:14px}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.filters button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 12px;border-radius:99px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.filters button:focus-visible,.filters input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.filters input{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 12px;border-radius:99px;min-width:0;flex:1 1 200px;max-width:320px}
+.group-title{font-size:13px;font-family:"IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:6px;margin-top:8px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+@media (max-width:420px){.cards{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.card-head .file{color:var(--muted);font-size:12px}
+.card .task{font-size:14px}
+.card .parent{font-size:12.5px;color:var(--muted)}
+.card .hook{font-size:12.5px;color:var(--muted)}
+.card .todo{font-size:13px;background:var(--fix-bg);color:var(--fix-fg);border-radius:4px;padding:6px 8px}
+.eps{display:flex;flex-direction:column;gap:4px;margin:0;padding:0;list-style:none}
+.ep{display:flex;gap:8px;align-items:baseline;font-family:"IBM Plex Mono",monospace;font-size:12px;overflow-wrap:anywhere}
+.m{font-weight:600;min-width:48px;font-size:11px}
+.m-GET{color:var(--get)} .m-POST{color:var(--post)} .m-PUT{color:var(--put)} .m-PATCH{color:var(--patch)} .m-DELETE{color:var(--del)}
+.noep{font-size:12.5px;color:var(--muted);font-style:italic}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--bg);position:sticky;top:0}
+td.path{font-family:"IBM Plex Mono",monospace;font-size:12px;white-space:nowrap}
+tr.ctrl td{background:var(--bg);font-weight:600;font-size:12.5px}
+td .who{display:flex;flex-wrap:wrap;gap:4px}
+td .who span{font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--new-bg);color:var(--new-fg);padding:1px 6px;border-radius:4px}
+td .who span.unused{background:var(--off-bg);color:var(--off-fg)}
+.flows{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.flow{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.flow ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.flow code{font-size:12px}
+.ticket{background:var(--paper);color:var(--paper-ink);font-family:"IBM Plex Mono",monospace;font-size:12px;padding:14px 16px;width:280px;max-width:100%;border-radius:2px;box-shadow:0 1px 0 rgba(0,0,0,.08);line-height:1.45}
+.ticket .c{text-align:center} .ticket hr{border:0;border-top:1px dashed #999;margin:6px 0}
+.ticket .row{display:flex;justify-content:space-between;gap:8px}
+.ticket-row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.ticket-notes{flex:1 1 300px;font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:8px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">megi · React 19 + Vite · Spring Boot backend</div>
+  <h1>Megi frontend arhitektura</h1>
+  <p class="lede">Dovršeno stablo React komponenti za restoranski POS: narudžbe hrane i pića s ispisom za kuhinju i šank, dostava i ponijeti, zalihe pića, konobari i izvještaji. Svaka komponenta ima svoj zadatak i endpoint(e) koje koristi. Dijagram je napravljen iz koda (6 kontrolera, <code>megi-frontend/src</code>) bez ikakvih izmjena.</p>
+</header>
+
+<section>
+  <div class="stats" id="stats"></div>
+  <div class="legend">
+    <span class="chip s-ok">postoji</span> radi, ne dirati
+    <span class="chip s-fix">doraditi</span> postoji, treba izmjena
+    <span class="chip s-new">novo</span> treba napraviti
+    <span class="chip s-off">ne koristi se</span> endpoint namjerno izostavljen
+  </div>
+</section>
+
+<section>
+  <h2>Stablo komponenti <small>puna linija = renderira, isprekidana = podaci preko contexta</small></h2>
+  <div class="diagram">
+<pre class="mermaid">
+flowchart TD
+  main["main.jsx<br/>QueryClientProvider"]:::ok --> App
+  App["App<br/>ekran: login / POS / admin"]:::fix
+  App --> Auth["AuthContext<br/>prijavljeni konobar"]:::new
+  App --> OrderCtx["OrderContext<br/>košarica"]:::fix
+  App --> Login["LoginPin<br/>POST /users/login"]:::new
+  App --> NavBar["NavBar<br/>GET /drinks/low-stock"]:::fix
+
+  subgraph POS["POS · konobar na tabletu"]
+    Tables["Tables<br/>GET /orders/active (5s)"]:::fix
+    Multi["MultiOrderPicker<br/>DOSTAVA / PONIJETI<br/>GET /orders/table/{t}/active"]:::new
+    Modal["Modal<br/>(OrderDetailsModal)"]:::ok
+    Details["OrderDetails<br/>GET /orders/{id}<br/>POST bill · send · cancel · close"]:::fix
+    Line["OrderLineRow<br/>PATCH qty · DELETE · storno"]:::new
+    Reprint["ReprintMenu<br/>GET tickets/kitchen · bar · bill"]:::new
+    Menu["Menu<br/>Hrana · Piće · Dodaci"]:::fix
+    Food["Food<br/>GET /food?onlyAvailable"]:::ok
+    Picker["FoodItemPicker<br/>(OrderItem.jsx)"]:::ok
+    Drinks["Drinks<br/>GET /drinks · /categories"]:::fix
+    Addons["Addons<br/>GET /addons?onlyAvailable"]:::new
+    Side["RightSideBar"]:::fix
+    Cart["Cart (Order.jsx)<br/>POST /orders/submit"]:::fix
+    Active["ActiveOrdersList<br/>GET /orders/active"]:::new
+    Card["ActiveOrderCard"]:::new
+    Ticket["TicketPreview<br/>KITCHEN · BAR · BILL"]:::new
+  end
+
+  subgraph ADMIN["Account · admin (role ADMIN)"]
+    Admin["AdminLayout (Account)"]:::new
+    FoodAdmin["FoodAdmin<br/>GET /food · PATCH · DELETE"]:::new
+    FoodForm["FoodForm (AddFood)<br/>POST · PUT /food"]:::fix
+    Portion["PortionEditor<br/>/food/{id}/portions"]:::new
+    Option["FoodOptionEditor<br/>/food/{id}/options"]:::new
+    DrinkAdmin["DrinkAdmin<br/>GET /drinks · PATCH · DELETE"]:::new
+    DrinkForm["DrinkForm (AddDrink)<br/>POST · PUT /drinks"]:::new
+    Stock["StockDialog (AddStocks)<br/>POST · PUT /drinks/{id}/stock"]:::new
+    Low["LowStockPanel<br/>GET /drinks/low-stock"]:::new
+    AddonAdmin["AddonAdmin<br/>/addons CRUD"]:::new
+    AddonForm["AddonForm<br/>POST · PUT /addons"]:::new
+    UserAdmin["UserAdmin<br/>GET /users · PATCH active · DELETE"]:::new
+    UserForm["UserForm<br/>POST · PUT /users"]:::new
+    Pin["ChangePinDialog<br/>PATCH /users/{id}/pin"]:::new
+    Reports["Reports<br/>odabir perioda"]:::new
+    Sales["SalesReportView<br/>/reports/today·day·month·range"]:::new
+    Deliv["DeliveryReportView<br/>/reports/delivery/*"]:::new
+    DelTot["DeliveryTotalBadge<br/>/reports/delivery/total"]:::new
+    History["OrderHistory<br/>GET /orders?type&from&to"]:::new
+  end
+
+  App --> Tables
+  App --> Menu
+  App --> Side
+  App --> Admin
+  Tables --> Multi
+  Tables --> Modal
+  Multi --> Modal
+  Modal --> Details
+  Details --> Line
+  Details --> Reprint
+  Details -.->|Dodaj još: orderId| Menu
+  Menu --> Food --> Picker
+  Menu --> Drinks
+  Menu --> Addons
+  Picker -.-> OrderCtx
+  Drinks -.-> OrderCtx
+  Addons -.-> OrderCtx
+  OrderCtx -.-> Cart
+  Auth -.->|userId| Cart
+  Side --> Cart
+  Side --> Active --> Card
+  Card -.->|klik| Details
+  Cart -->|tickets| Ticket
+  Details -->|račun| Ticket
+  Reprint --> Ticket
+
+  Admin --> FoodAdmin --> FoodForm
+  FoodForm --> Portion
+  FoodForm --> Option
+  Admin --> DrinkAdmin --> DrinkForm
+  DrinkAdmin --> Stock
+  Admin --> Low
+  Admin --> AddonAdmin --> AddonForm
+  Admin --> UserAdmin --> UserForm
+  UserAdmin --> Pin
+  Admin --> Reports
+  Reports --> Sales
+  Reports --> Deliv
+  Reports --> DelTot
+  Admin --> History
+  History --> Reprint
+  NavBar -.->|klik na badge| Low
+
+  classDef ok fill:#dcefe5,stroke:#2f7d55,color:#133d28
+  classDef fix fill:#fbeecb,stroke:#b07a12,color:#5a3805
+  classDef new fill:#dde7fa,stroke:#3f63b5,color:#1a3470
+</pre>
+  </div>
+</section>
+
+<section>
+  <h2>Što sad ne radi ili fali <small>nađeno u kodu</small></h2>
+  <div class="gaps" id="gaps"></div>
+</section>
+
+<section>
+  <h2>Glavni tokovi</h2>
+  <div class="flows">
+    <div class="flow">
+      <h3>Stol: prva narudžba → dodaj još → račun</h3>
+      <ol>
+        <li>Tables: slobodan stol → Menu (bez orderId)</li>
+        <li>Picker / Drinks / Addons → OrderContext</li>
+        <li>Cart „Naruči“ → <code>POST /orders/submit</code> → TicketPreview (KITCHEN + BAR)</li>
+        <li>Klik na zauzet stol → OrderDetails → „Dodaj još“ → Menu s orderId → opet submit</li>
+        <li>„Račun“ → <code>POST /orders/{id}/bill</code> → TicketPreview (BILL), stol slobodan</li>
+      </ol>
+    </div>
+    <div class="flow">
+      <h3>Dostava i za ponijeti</h3>
+      <ol>
+        <li>Klik na DOSTAVA → MultiOrderPicker (<code>GET /orders/table/DOSTAVA/active</code>)</li>
+        <li>„Nova dostava“ → Menu bez orderId → submit otvara novu</li>
+        <li>Postojeća dostava → OrderDetails → „Dodaj još“ (submit s orderId) ili „Račun“ u šanku</li>
+        <li>PONIJETI isto, ali ostaje DINE_IN; kuhinjski tiket nosi „ZA PONIJETI“</li>
+      </ol>
+    </div>
+    <div class="flow">
+      <h3>Ispravke na narudžbi</h3>
+      <ol>
+        <li>NEW stavka: stepper <code>PATCH …/quantity</code> ili <code>DELETE …/items/{itemId}</code></li>
+        <li>SENT stavka: „Storno“ <code>POST …/items/{itemId}/cancel</code> (ostaje zapisana, ne ulazi u iznos)</li>
+        <li>Cijela narudžba: „Otkaži“ <code>POST /orders/{id}/cancel</code> vraća zalihu pića</li>
+        <li>Printer zaglavio: ReprintMenu, GET kuhinja / šank / račun</li>
+      </ol>
+    </div>
+  </div>
+  <div class="ticket-row">
+    <div class="ticket" aria-label="Primjer kuhinjskog tiketa">
+      <div class="c"><b>KUHINJA</b></div>
+      <div class="c"><b>*** ZA PONIJETI ***</b></div>
+      <hr>
+      <div class="row"><span>Stol: PONIJETI</span><span>#142</span></div>
+      <div class="row"><span>Konobar: Ana</span><span>14:32</span></div>
+      <hr>
+      <div>2× Ćevapi</div><div>&nbsp;&nbsp;Mala · + Cijela lepina</div>
+      <div>1× Pizza Capricciosa</div><div>&nbsp;&nbsp;Velika · bez gljiva</div>
+      <hr>
+      <div class="c">bez cijena</div>
+    </div>
+    <div class="ticket-notes">
+      <h3 style="color:var(--ink)">TicketPreview prikazuje backendov <code>Ticket</code> 1:1</h3>
+      <p><code>{ type, orderId, table, waiter, printedAt, lines[{quantity,name,detail,lineTotal}], total, takeaway, notice }</code>. <code>total</code> i <code>lineTotal</code> su <code>null</code> na KITCHEN tiketu. <code>notice</code> ide istaknuto na vrh.</p>
+      <p>Dok printer (80 mm termalni) ne stigne, komponenta samo prikazuje tiket na ekranu. Kasnije se ovdje priključi ESC/POS ispis, bez diranja ostatka aplikacije.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Komponente <small id="compcount"></small></h2>
+  <div class="filters" role="group" aria-label="Filter komponenti">
+    <button type="button" data-f="all" aria-pressed="true">Sve</button>
+    <button type="button" data-f="ok" aria-pressed="false">Postoji</button>
+    <button type="button" data-f="fix" aria-pressed="false">Doraditi</button>
+    <button type="button" data-f="new" aria-pressed="false">Novo</button>
+    <input id="q" type="search" placeholder="Traži komponentu ili endpoint…" aria-label="Traži">
+  </div>
+  <div id="groups"></div>
+</section>
+
+<section>
+  <h2>Pokrivenost endpointa <small id="covsum"></small></h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Metoda</th><th>Ruta</th><th>Čemu služi</th><th>Komponenta</th></tr></thead>
+    <tbody id="eptable"></tbody>
+  </table></div>
+</section>
+</div>
+
+<script>
+const C = [
+ // ---------- ZAJEDNIČKO ----------
+ {id:"App",g:"Zajedničko",s:"fix",f:"App.jsx",p:"main.jsx",t:"Korijen. Umotava aplikaciju u AuthContext i OrderContext i bira ekran: LoginPin dok nitko nije prijavljen, zatim POS (Tables / Menu + RightSideBar) ili Admin za ADMIN ulogu. Drži selectedTable = { label, name, orderId }.",todo:"Dodati AuthContext, view state (pos | admin) i prikaz LoginPin kad user == null."},
+ {id:"AuthContext",g:"Zajedničko",s:"new",f:"context/AuthContext.jsx",p:"App",t:"Čuva prijavljenog konobara { id, name, role, active } iz odgovora logina. Daje user, isAdmin, login(), logout(). Cart iz njega uzima userId umjesto hardkodirane jedinice.",hook:"useAuth()"},
+ {id:"OrderContext",g:"Zajedničko",s:"fix",f:"context/OrderContext.jsx",p:"App",t:"Košarica (useReducer): stavke, ukupno, količine. Drži stavke dok konobar ne klikne Naruči.",todo:"ADD sada odbija sve bez portion, pa piće i dodatak ne mogu u košaricu. Dodati polje type (FOOD / DRINK / ADDON), cijenu za DRINK/ADDON uzeti iz item.price i staviti type u lineId (hrana id 3 i piće id 3 se sada sudare). Maknuti nekorišteni import useFood."},
+ {id:"LoginPin",g:"Zajedničko",s:"new",f:"LoginPin.jsx",p:"App",t:"PIN tipkovnica za tablet (4 do 6 znamenki, velike tipke). Na uspjeh sprema korisnika u AuthContext. Poruku greške backenda prikazuje direktno.",hook:"useLogin() → useMutation"},
+ {id:"NavBar",g:"Zajedničko",s:"fix",f:"NavBar.jsx",p:"App",t:"Gornja traka: ime konobara, prekidač POS / Admin (samo ADMIN), Odjava. Za admina crveni badge s brojem pića pri kraju zalihe.",todo:"Sada je samo naslov i nije renderiran u App.",hook:"useLowStock(5)"},
+ {id:"Modal",g:"Zajedničko",s:"ok",f:"OrderDetailsModal.jsx",p:"Tables, MultiOrderPicker, admin forme",t:"Generički portal modal (Escape, klik izvan, blokira scroll). Koristi se za OrderDetails, TicketPreview i sve admin forme.",todo:"Samo preporuka: preimenovati u Modal.jsx jer je generički."},
+ {id:"TicketPreview",g:"Zajedničko",s:"new",f:"TicketPreview.jsx",p:"Cart, OrderDetails, ReprintMenu",t:"Prikazuje Ticket (KITCHEN / BAR / BILL) kao 80 mm termalni papir: notice na vrhu, stol, konobar, vrijeme, redovi, total samo kad nije null. Ovdje se kasnije spaja pravi printer."},
+ // ---------- POS ----------
+ {id:"Tables",g:"POS",s:"fix",f:"Tables.jsx",p:"App",t:"Reoni Unutra / Terasa / Kat, stolovi iz data/Tables.js s oznakom zauzetosti i iznosom. Slobodan stol → Menu; zauzet → Modal s OrderDetails; DOSTAVA / PONIJETI → MultiOrderPicker.",todo:"DOSTAVA i PONIJETI sada uvijek idu ravno u Menu (nova narudžba), pa postojeću dostavu nije moguće dopuniti ni naplatiti iz UI-a. Preusmjeriti na MultiOrderPicker.",hook:"useActiveOrders() (preimenovati datoteku useActiveOders.js)"},
+ {id:"MultiOrderPicker",g:"POS",s:"new",f:"MultiOrderPicker.jsx",p:"Tables",t:"Za DOSTAVA i PONIJETI: lista svih otvorenih narudžbi na bloku (#id, vrijeme, konobar, iznos) i gumb „Nova narudžba“. Klik na postojeću otvara OrderDetails (Dodaj još / Račun).",hook:"useTableOrders(label)"},
+ {id:"OrderDetails",g:"POS",s:"fix",f:"OrderDetails.jsx",p:"Modal",t:"Detalji jedne otvorene narudžbe sa statusom svake stavke (NEW / SENT / CANCELLED). Akcije: Dodaj još, Račun (s potvrdom), Pošalji neposlano (kad ima NEW stavki), Otkaži narudžbu, Zatvori bez računa (samo ADMIN). Nakon računa otvara TicketPreview.",todo:"Sada prima order iz liste aktivnih. Dohvaćati svježe preko GET /orders/{id} i dodati gumbe send / cancel / close. Račun sada samo zatvori modal; treba pokazati vraćeni BILL tiket.",hook:"useOrder(id), useBillOrder, useOrderActions(id)"},
+ {id:"OrderLineRow",g:"POS",s:"new",f:"OrderLineRow.jsx",p:"OrderDetails",t:"Jedan red stavke. NEW: stepper količine i Obriši. SENT: Storno s potvrdom u samom redu. CANCELLED: precrtano, bez akcija.",hook:"useOrderActions(orderId)"},
+ {id:"ReprintMenu",g:"POS",s:"new",f:"ReprintMenu.jsx",p:"OrderDetails, OrderHistory",t:"Ponovni ispis bez promjene narudžbe: Kuhinja, Šank, Račun. Rezultat ide u TicketPreview. GET /bill ne zatvara narudžbu.",hook:"useTicket(orderId, kind) → useQuery enabled:false / refetch"},
+ {id:"Menu",g:"POS",s:"fix",f:"Menu.jsx",p:"App",t:"Zaglavlje sa stolom i povratkom na stolove, tabovi Hrana / Piće / Dodaci. Prosljeđuje table (s orderId) dalje.",todo:"Dodati tab Dodaci. Drinks onSelect sada samo console.log; spojiti na addItemToOrder({type:'DRINK'})."},
+ {id:"Food",g:"POS",s:"ok",f:"Food.jsx",p:"Menu",t:"Jela s menija po tabovima Pizza / Roštilj / Doručak / Ostalo. Klik otvara FoodItemPicker.",todo:"Sitnice: maknuti console.log(food) i dupli if(error); <p>{error}</p> renderira objekt.",hook:"useFood()"},
+ {id:"FoodItemPicker",g:"POS",s:"ok",f:"OrderItem.jsx",p:"Food",t:"Odabir porcije, opcija za tu porciju (doplata), količine i napomene za kuhinju → addItemToOrder (FOOD). Opcije dolaze već ugniježđene u FoodResponse, pa ne treba zaseban poziv."},
+ {id:"Drinks",g:"POS",s:"fix",f:"Drinks.jsx",p:"Menu",t:"Pića po kategorijama (tabovi iz enuma, redoslijed s backenda). Klik dodaje piće u košaricu. Kad se uključi app.stock.check-enabled, može pokazati zalihu i zasiviti piće kojeg nema.",todo:"Prebaciti s useEffect + fetch na React Query (useDrinks, useDrinkCategories) i spojiti onSelect na košaricu.",hook:"useDrinks({onlyAvailable:true}), useDrinkCategories()"},
+ {id:"Addons",g:"POS",s:"new",f:"Addons.jsx",p:"Menu",t:"Mreža dodataka koji se naplaćuju zasebno → addItemToOrder (ADDON).",hook:"useAddons({onlyAvailable:true})"},
+ {id:"RightSideBar",g:"POS",s:"fix",f:"RightSideBar.jsx",p:"App",t:"Desni stupac: Cart na vrhu kad je stol odabran, ispod ActiveOrdersList.",todo:"Sada zove GET /orders (sve narudžbe ikad, i zatvorene) a piše „Nema otvorenih narudžbi“. Izdvojiti listu u ActiveOrdersList na GET /orders/active."},
+ {id:"Cart",g:"POS",s:"fix",f:"Order.jsx",p:"RightSideBar",t:"Košarica za odabrani stol: stavke, stepper, Ukloni, Očisti, Naruči. Naruči šalje sve u jednom pozivu i prikazuje vraćene KITCHEN i BAR tikete. Opcionalno za postojeću narudžbu: „Spremi bez printa“ (POST /items), a ispis kasnije iz OrderDetails.",todo:"userId iz AuthContext (sada default 1). Rezultat submita (tickets) se sada ignorira; otvoriti TicketPreview. Nakon uspjeha vratiti na stolove.",hook:"useSubmitOrder()"},
+ {id:"ActiveOrdersList",g:"POS",s:"new",f:"ActiveOrdersList.jsx",p:"RightSideBar",t:"Otvorene narudžbe, najnovije prve, s filterom Sve / Dostava (?type=DELIVERY). Klik na karticu otvara OrderDetails.",hook:"useActiveOrders(type)"},
+ {id:"ActiveOrderCard",g:"POS",s:"new",f:"ActiveOrderCard.jsx",p:"ActiveOrdersList",t:"Kartica jedne narudžbe (stol, #id, vrijeme, konobar, stavke, ukupno). Kod izdvojiti iz sadašnjeg RightSideBar."},
+ // ---------- ADMIN ----------
+ {id:"AdminLayout",g:"Admin (Account)",s:"new",f:"admin/AdminLayout.jsx",p:"App",t:"Account iz tvog dijagrama. Tabovi: Jela, Pića i zalihe, Dodaci, Konobari, Izvještaji, Povijest. Vidljivo samo za role ADMIN."},
+ {id:"FoodAdmin",g:"Admin (Account)",s:"new",f:"admin/FoodAdmin.jsx",p:"AdminLayout",t:"Sva jela (i skinuta s menija) s prekidačem Na meniju, Uredi, Obriši. Brisanje backend odbija ako je jelo ikad naručeno; tada ponuditi skidanje s menija.",hook:"useFood({all:true}), useFoodMutations()"},
+ {id:"FoodForm",g:"Admin (Account)",s:"fix",f:"AddFood.jsx",p:"FoodAdmin",t:"Novo jelo: naziv, opis, kategorija i barem jedna porcija { size, price }. Uređivanje mijenja samo naziv, opis i kategoriju (porcije se ignoriraju u PUT), a porcije i opcije uređuju editori ispod.",todo:"Sada prazan stub; import ./AddFood.module.css je kriv (datoteka je u style/) i funkcija se zove Food."},
+ {id:"PortionEditor",g:"Admin (Account)",s:"new",f:"admin/PortionEditor.jsx",p:"FoodForm",t:"Tablica porcija jela (Mala / Srednja / Velika / Standardna + cijena): dodaj, uredi, obriši (odbija ako je naručena)."},
+ {id:"FoodOptionEditor",g:"Admin (Account)",s:"new",f:"admin/FoodOptionEditor.jsx",p:"FoodForm",t:"Opcije s doplatom, npr. Ćevapi / Mala → „Cijela lepina“. Opcija bez porcije vrijedi za sve porcije. Filter po porciji koristi ?portionId=."},
+ {id:"DrinkAdmin",g:"Admin (Account)",s:"new",f:"admin/DrinkAdmin.jsx",p:"AdminLayout",t:"Sva pića po kategorijama sa zalihom, prekidačem Na karti, Uredi, Zaliha, Obriši.",hook:"useDrinks({category}), useDrinkCategories(), useDrinkMutations()"},
+ {id:"DrinkForm",g:"Admin (Account)",s:"new",f:"admin/DrinkForm.jsx",p:"DrinkAdmin",t:"AddDrink iz tvog dijagrama. Novo piće: naziv, cijena, kategorija, početna zaliha. Uređivanje: naziv, cijena, kategorija (zaliha samo preko StockDialog)."},
+ {id:"StockDialog",g:"Admin (Account)",s:"new",f:"admin/StockDialog.jsx",p:"DrinkAdmin",t:"AddStocks iz tvog dijagrama. Dva načina: Primka (dodaj N komada nakon dostave robe) i Inventura (postavi točno stanje)."},
+ {id:"LowStockPanel",g:"Admin (Account)",s:"new",f:"admin/LowStockPanel.jsx",p:"AdminLayout (i NavBar badge)",t:"Pića ispod praga (default 5, prag se može mijenjati) s gumbom Primka koji otvara StockDialog.",hook:"useLowStock(threshold)"},
+ {id:"AddonAdmin",g:"Admin (Account)",s:"new",f:"admin/AddonAdmin.jsx",p:"AdminLayout",t:"Svi dodaci s cijenom, prekidačem Dostupno, Uredi, Obriši."},
+ {id:"AddonForm",g:"Admin (Account)",s:"new",f:"admin/AddonForm.jsx",p:"AddonAdmin",t:"Novi dodatak ili izmjena: naziv i cijena."},
+ {id:"UserAdmin",g:"Admin (Account)",s:"new",f:"admin/UserAdmin.jsx",p:"AdminLayout",t:"Konobari i admini, filter po ulozi / samo aktivni. Deaktivacija umjesto brisanja za one koji više ne rade (čuva povijest u izvještajima)."},
+ {id:"UserForm",g:"Admin (Account)",s:"new",f:"admin/UserForm.jsx",p:"UserAdmin",t:"Novi korisnik (ime, PIN, uloga) ili izmjena imena i uloge. PIN se nikad ne vraća s backenda."},
+ {id:"ChangePinDialog",g:"Admin (Account)",s:"new",f:"admin/ChangePinDialog.jsx",p:"UserAdmin",t:"Novi PIN za konobara (4 do 6 znamenki)."},
+ {id:"Reports",g:"Admin (Account)",s:"new",f:"admin/Reports.jsx",p:"AdminLayout",t:"Reports iz tvog dijagrama. Odabir perioda (Danas / Dan / Mjesec / Raspon) i tabovi Ukupni promet / Dostava.",hook:"useSalesReport(period), useDeliveryReport(period)"},
+ {id:"SalesReportView",g:"Admin (Account)",s:"new",f:"admin/SalesReportView.jsx",p:"Reports",t:"SalesReport: broj narudžbi, ukupno, prosjek, hrana / piće / dodaci, restoran naspram dostave, top artikli, promet po konobaru. Broji samo DONE narudžbe po zamrznutim cijenama."},
+ {id:"DeliveryReportView",g:"Admin (Account)",s:"new",f:"admin/DeliveryReportView.jsx",p:"Reports",t:"DeliveryReport: promet dostave, top artikli, lista dostava. Upozorenje kad je openOrderCount > 0 (dostave koje još nisu naplaćene ne ulaze u total)."},
+ {id:"DeliveryTotalBadge",g:"Admin (Account)",s:"new",f:"admin/DeliveryTotalBadge.jsx",p:"Reports (zaglavlje)",t:"Samo jedan broj: promet dostave za danas ili odabrani dan. Brzi pogled bez učitavanja cijelog izvještaja."},
+ {id:"OrderHistory",g:"Admin (Account)",s:"new",f:"admin/OrderHistory.jsx",p:"AdminLayout",t:"Pretraga svih narudžbi po tipu i vremenu (i zatvorenih i otkazanih). Klik otvara detalj (read-only) s ReprintMenu za ponovni ispis računa."}
+];
+
+const E = [
+ ["Narudžbe · /api/orders"],
+ ["GET","/api/orders?type&from&to","Pretraga narudžbi (sve, i zatvorene)",["OrderHistory"]],
+ ["GET","/api/orders/active?type","Otvorene (NEW) narudžbe",["Tables","ActiveOrdersList"]],
+ ["GET","/api/orders/table/{table}/active","Otvorene narudžbe jednog stola / bloka",["MultiOrderPicker"]],
+ ["GET","/api/orders/{id}","Jedna narudžba sa stavkama",["OrderDetails","OrderHistory"]],
+ ["GET","/api/orders/{id}/total","Samo iznos",[],"Suvišno: total već dolazi u OrderResponse."],
+ ["POST","/api/orders","Uvijek otvori novu praznu narudžbu",[],"Ne koristiti: prazna narudžba bi zauzela stol. Submit otvara narudžbu tek kad ima stavki."],
+ ["POST","/api/orders/open","Vrati otvorenu ili otvori novu",[],"Ne koristiti iz istog razloga; submit sam preuzima otvorenu narudžbu stola."],
+ ["POST","/api/orders/{id}/food","Dodaj jedno jelo",[],"Pokriveno sa submit / items (cijela košarica u jednoj transakciji)."],
+ ["POST","/api/orders/{id}/drinks","Dodaj jedno piće",[],"Pokriveno sa submit / items."],
+ ["POST","/api/orders/{id}/addons","Dodaj jedan dodatak",[],"Pokriveno sa submit / items."],
+ ["POST","/api/orders/{id}/items","Upiši košaricu bez ispisa",["Cart"]],
+ ["PATCH","/api/orders/{id}/items/{itemId}/quantity","Promjena količine stavke",["OrderLineRow"]],
+ ["DELETE","/api/orders/{id}/items/{itemId}","Obriši neposlanu (NEW) stavku",["OrderLineRow"]],
+ ["POST","/api/orders/{id}/items/{itemId}/cancel","Storno poslane stavke",["OrderLineRow"]],
+ ["POST","/api/orders/submit","Naruči: otvori/preuzmi, upiši, pošalji na print",["Cart"]],
+ ["POST","/api/orders/{id}/send","Pošalji NEW stavke na print",["OrderDetails"]],
+ ["POST","/api/orders/{id}/close","Zatvori bez računa",["OrderDetails"]],
+ ["POST","/api/orders/{id}/cancel","Otkaži cijelu narudžbu",["OrderDetails"]],
+ ["GET","/api/orders/{id}/tickets/kitchen","Reprint kuhinjskog tiketa",["ReprintMenu"]],
+ ["GET","/api/orders/{id}/tickets/bar","Reprint šank tiketa",["ReprintMenu"]],
+ ["GET","/api/orders/{id}/bill","Pregled / reprint računa (ne zatvara)",["ReprintMenu"]],
+ ["POST","/api/orders/{id}/bill","Račun: zatvori i vrati BILL tiket",["OrderDetails"]],
+ ["Izvještaji · /api/reports"],
+ ["GET","/api/reports/today","Promet danas",["SalesReportView"]],
+ ["GET","/api/reports/day?date","Promet za dan",["SalesReportView"]],
+ ["GET","/api/reports/month?year&month","Promet za mjesec",["SalesReportView"]],
+ ["GET","/api/reports/range?from&to","Promet za raspon",["SalesReportView"]],
+ ["GET","/api/reports/delivery/today","Dostava danas",["DeliveryReportView"]],
+ ["GET","/api/reports/delivery/day?date","Dostava za dan",["DeliveryReportView"]],
+ ["GET","/api/reports/delivery/range?from&to","Dostava za raspon",["DeliveryReportView"]],
+ ["GET","/api/reports/delivery/total?date","Samo iznos dostave",["DeliveryTotalBadge"]],
+ ["Jela · /api/food"],
+ ["GET","/api/food?onlyAvailable=true","Meni za konobara",["Food"]],
+ ["GET","/api/food","Sva jela (administracija)",["FoodAdmin"]],
+ ["GET","/api/food/{id}","Jedno jelo",["FoodForm"]],
+ ["POST","/api/food","Novo jelo s porcijama",["FoodForm"]],
+ ["PUT","/api/food/{id}","Izmjena naziva / opisa / kategorije",["FoodForm"]],
+ ["PATCH","/api/food/{id}/availability?available","Skini s menija / vrati",["FoodAdmin"]],
+ ["DELETE","/api/food/{id}","Obriši jelo",["FoodAdmin"]],
+ ["GET","/api/food/{id}/portions","Porcije jela",["PortionEditor"]],
+ ["POST","/api/food/{id}/portions","Nova porcija",["PortionEditor"]],
+ ["PUT","/api/food/portions/{portionId}","Izmjena porcije",["PortionEditor"]],
+ ["DELETE","/api/food/portions/{portionId}","Obriši porciju",["PortionEditor"]],
+ ["GET","/api/food/{id}/options?portionId","Opcije jela (po porciji)",["FoodOptionEditor"]],
+ ["POST","/api/food/{id}/options","Nova opcija s doplatom",["FoodOptionEditor"]],
+ ["PUT","/api/food/options/{optionId}","Izmjena opcije",["FoodOptionEditor"]],
+ ["DELETE","/api/food/options/{optionId}","Obriši opciju",["FoodOptionEditor"]],
+ ["Pića · /api/drinks"],
+ ["GET","/api/drinks?onlyAvailable=true&category","Karta pića za konobara",["Drinks"]],
+ ["GET","/api/drinks?category","Sva pića (administracija)",["DrinkAdmin"]],
+ ["GET","/api/drinks/categories","Kategorije za tabove { value, label }",["Drinks","DrinkAdmin","DrinkForm"]],
+ ["GET","/api/drinks/{id}","Jedno piće",["DrinkForm"]],
+ ["GET","/api/drinks/low-stock?threshold","Pića pri kraju zalihe",["LowStockPanel","NavBar"]],
+ ["POST","/api/drinks","Novo piće",["DrinkForm"]],
+ ["PUT","/api/drinks/{id}","Izmjena naziva / cijene / kategorije",["DrinkForm"]],
+ ["PATCH","/api/drinks/{id}/availability?available","Skini s karte / vrati",["DrinkAdmin"]],
+ ["POST","/api/drinks/{id}/stock","Primka: dodaj količinu",["StockDialog"]],
+ ["PUT","/api/drinks/{id}/stock","Inventura: postavi stanje",["StockDialog"]],
+ ["DELETE","/api/drinks/{id}","Obriši piće",["DrinkAdmin"]],
+ ["Dodaci · /api/addons"],
+ ["GET","/api/addons?onlyAvailable=true","Dodaci za konobara",["Addons"]],
+ ["GET","/api/addons","Svi dodaci",["AddonAdmin"]],
+ ["GET","/api/addons/{id}","Jedan dodatak",["AddonForm"]],
+ ["POST","/api/addons","Novi dodatak",["AddonForm"]],
+ ["PUT","/api/addons/{id}","Izmjena dodatka",["AddonForm"]],
+ ["PATCH","/api/addons/{id}/availability?available","Dostupno / nedostupno",["AddonAdmin"]],
+ ["DELETE","/api/addons/{id}","Obriši dodatak",["AddonAdmin"]],
+ ["Korisnici · /api/users"],
+ ["POST","/api/users/login","Prijava PIN-om",["LoginPin"]],
+ ["GET","/api/users?onlyActive&role","Lista korisnika",["UserAdmin"]],
+ ["GET","/api/users/{id}","Jedan korisnik",["UserForm"]],
+ ["POST","/api/users","Novi korisnik",["UserForm"]],
+ ["PUT","/api/users/{id}","Izmjena imena / uloge",["UserForm"]],
+ ["PATCH","/api/users/{id}/pin","Promjena PIN-a",["ChangePinDialog"]],
+ ["PATCH","/api/users/{id}/active?active","Aktiviraj / deaktiviraj",["UserAdmin"]],
+ ["DELETE","/api/users/{id}","Obriši korisnika",["UserAdmin"]]
+];
+
+const GAPS = [
+ {c:1,h:"Dostavu ne možeš naplatiti",p:"DOSTAVA i PONIJETI uvijek otvaraju novu narudžbu. Postojeća dostava nema put do „Dodaj još“ ni do „Račun“, pa ostaje otvorena zauvijek i ne ulazi u izvještaj. Rješenje: MultiOrderPicker."},
+ {c:1,h:"Piće ne ide u košaricu",p:"Drinks.onSelect radi samo console.log, a reducer ADD odbija sve bez portion. toSubmitRequest već zna za DRINK / ADDON, fali samo type na stavci."},
+ {c:1,h:"Sudar lineId",p:"lineId = itemId|portionId|… nema tip, pa bi jelo id 3 i piće id 3 postali ista stavka. Staviti type na početak lineId."},
+ {c:0,h:"Sidebar pokazuje sve narudžbe",p:"useOrders zove GET /orders (i zatvorene i otkazane). Za sidebar treba GET /orders/active."},
+ {c:0,h:"userId je uvijek 1",p:"Cart ima userId = 1. Izvještaj po konobaru (byWaiter) je zato beskoristan dok ne dođe LoginPin + AuthContext."},
+ {c:0,h:"Tiketi se bacaju",p:"Submit i Račun vraćaju Ticket objekte koji se nigdje ne prikazuju. TicketPreview ih prikazuje dok printer ne stigne."},
+ {c:0,h:"AddFood.jsx se ne bi kompajlirao",p:"Import ./AddFood.module.css pokazuje na krivu mapu (CSS je u style/), a komponenta se zove Food. Sada ništa ne puca samo zato što je nitko ne importa."},
+ {c:0,h:"Sitnice",p:"useActiveOders.js (tipfeler), console.log(food) u Food.jsx, <p>{error}</p> renderira objekt, Drinks bez React Query cachea."}
+];
+
+const S = {ok:["postoji","s-ok"],fix:["doraditi","s-fix"],new:["novo","s-new"]};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// endpoint index po komponenti
+const byComp = {};
+let total = 0, used = 0;
+E.forEach(e => { if (e.length === 1) return; total++; if (e[3].length) used++; e[3].forEach(c => (byComp[c] ??= []).push(e)); });
+
+document.getElementById("stats").innerHTML = [
+ [total,"API poziva (68 ruta + varijante onlyAvailable)"],[used,"pokriveno komponentama"],[total-used,"namjerno izostavljeno"],
+ [C.length,"komponenti ukupno"],[C.filter(c=>c.s==="new").length,"novih"],[C.filter(c=>c.s==="fix").length,"za doradu"]
+].map(([n,l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join("");
+
+document.getElementById("gaps").innerHTML = GAPS.map(g =>
+ `<div class="gap${g.c?" crit":""}"><h3>${esc(g.h)}</h3><p>${esc(g.p)}</p></div>`).join("");
+
+let filter = "all", query = "";
+function renderCards(){
+  const q = query.trim().toLowerCase();
+  const groups = {};
+  let shown = 0;
+  C.forEach(c => {
+    if (filter !== "all" && c.s !== filter) return;
+    const eps = byComp[c.id] || [];
+    const hay = (c.id+" "+c.f+" "+c.t+" "+eps.map(e=>e[1]).join(" ")).toLowerCase();
+    if (q && !hay.includes(q)) return;
+    shown++;
+    (groups[c.g] ??= []).push(c);
+  });
+  document.getElementById("compcount").textContent = `${shown} od ${C.length}`;
+  document.getElementById("groups").innerHTML = Object.entries(groups).map(([g, list]) =>
+   `<div class="group-title">${esc(g)}</div><div class="cards">${list.map(card).join("")}</div>`).join("")
+   || `<p class="noep">Nema komponente za taj upit.</p>`;
+}
+function card(c){
+  const eps = byComp[c.id] || [];
+  return `<article class="card">
+   <div class="card-head"><div><h3>${esc(c.id)}</h3><div class="file mono">${esc(c.f)}</div></div><span class="chip ${S[c.s][1]}">${S[c.s][0]}</span></div>
+   <div class="parent">Roditelj: ${esc(c.p)}</div>
+   <p class="task">${esc(c.t)}</p>
+   ${eps.length ? `<ul class="eps">${eps.map(e=>`<li class="ep"><span class="m m-${e[0]}">${e[0]}</span><span>${esc(e[1])}</span></li>`).join("")}</ul>` : `<div class="noep">Bez vlastitog endpointa (UI / podaci iz roditelja ili contexta)</div>`}
+   ${c.hook ? `<div class="hook">Hook: <code>${esc(c.hook)}</code></div>` : ""}
+   ${c.todo ? `<div class="todo">${esc(c.todo)}</div>` : ""}
+  </article>`;
+}
+document.querySelectorAll(".filters button").forEach(b => b.addEventListener("click", () => {
+  filter = b.dataset.f;
+  document.querySelectorAll(".filters button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderCards();
+}));
+document.getElementById("q").addEventListener("input", e => { query = e.target.value; renderCards(); });
+renderCards();
+
+document.getElementById("covsum").textContent = `${used} od ${total} koristi barem jedna komponenta`;
+document.getElementById("eptable").innerHTML = E.map(e => {
+  if (e.length === 1) return `<tr class="ctrl"><td colspan="4">${esc(e[0])}</td></tr>`;
+  const who = e[3].length ? e[3].map(c=>`<span>${esc(c)}</span>`).join("") : `<span class="unused">ne koristi se</span>`;
+  return `<tr><td><span class="m m-${e[0]}">${e[0]}</span></td><td class="path">${esc(e[1])}</td><td>${esc(e[2])}${e[4]?`<br><small style="color:var(--muted)">${esc(e[4])}</small>`:""}</td><td><div class="who">${who}</div></td></tr>`;
+}).join("");
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"default",flowchart:{htmlLabels:true}});</script>
+</body>
+</html>

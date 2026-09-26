@@ -27,6 +27,18 @@ export function submitOrder(body) {
   });
 }
 
+export function closeOrder(id) {
+  return request(`/orders/${id}/close`, {
+    method: "POST",
+  });
+}
+
+export function billOrder(id) {
+  return request(`/orders/${id}/bill`, {
+    method: "POST",
+  });
+}
+
 export function getActiveOrders() {
   return request("/orders/active");
 }
