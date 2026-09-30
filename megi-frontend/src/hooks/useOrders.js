@@ -1,17 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { API } from "../data/api";
+import { getTodayOrders } from "../data/api";
 
-const useOrders = () => {
-  async function fetchOrders() {
-    const res = await fetch(`${API}/orders`);
-    if (!res.ok) throw new Error("Greška prilikom učitavanja narudzbi");
-    return res.json();
-  }
-
-  return useQuery({
-    queryKey: ["orders"],
-    queryFn: fetchOrders,
+// Narudžbe trenutnog radnog dana (backend sam određuje dan po satu servera).
+const useOrders = () =>
+  useQuery({
+    queryKey: ["orders", "today"],
+    queryFn: getTodayOrders,
+    refetchInterval: 10000, // da se vide i narudžbe drugih konobara
+    refetchOnWindowFocus: true,
   });
-};
 
 export default useOrders;

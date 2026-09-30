@@ -1,10 +1,10 @@
 import styles from "./style/Tables.module.css";
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { unutra, terasa, kat } from "./data/Tables.js";
-import useActiveOrders from "./hooks/useActiveOders.js";
+import useOrders from "./hooks/useOrders.js";
 import useBillOrder from "./hooks/useBillOrder.js";
-import OrderDetailsModal from "./OrderDetailsModal.jsx";
-import OrderDetails from "./OrderDetails.jsx";
+import OrderDetailsDialog from "./OrderDetailsDialog.jsx";
+import { OrderContext } from "./context/OrderContext.jsx";
 
 const SPECIAL = [
   { id: "DOSTAVA", name: "Dostava Mišo šoMi", hint: "" },
@@ -22,8 +22,18 @@ const sumTotal = (orders) =>
   orders.reduce((sum, o) => sum + Number(o.total ?? 0), 0);
 
 export default function Tables({ reon, onReonChange, onSelectTable }) {
-  const { byTable, isError } = useActiveOrders();
+  // Sve ide preko /orders/today; stol je zauzet dok ima otvorenu (NEW) narudžbu
+  const { data: orders = [], isError } = useOrders();
+  const byTable = useMemo(() => {
+    const map = {};
+    for (const order of orders) {
+      if (order.status !== "NEW") continue;
+      (map[String(order.table)] ??= []).push(order);
+    }
+    return map;
+  }, [orders]);
   const billOrder = useBillOrder();
+  const { showTickets } = useContext(OrderContext);
   const activeReon = REONS.find((r) => r.id === reon) ?? REONS[0];
   const ordersFor = (label) => byTable[String(label)] ?? [];
 
@@ -55,7 +65,12 @@ export default function Tables({ reon, onReonChange, onSelectTable }) {
 
   function handleBill(order) {
     // nakon uspjeha React Query osvježi stolove → sto nema narudžbu → modal se sam zatvori
-    billOrder.mutate(order.id, { onSuccess: () => setSelected(null) });
+    billOrder.mutate(order.id, {
+      onSuccess: (ticket) => {
+        setSelected(null);
+        if (ticket) showTickets([ticket]);
+      },
+    });
   }
 
   return (
@@ -141,21 +156,15 @@ export default function Tables({ reon, onReonChange, onSelectTable }) {
         })}
       </div>
 
-      <OrderDetailsModal
-        isOpen={!!selectedOrder}
-        onClose={closeDetails}
+      <OrderDetailsDialog
+        order={selectedOrder}
         title={selected?.name}
-      >
-        {selectedOrder && (
-          <OrderDetails
-            order={selectedOrder}
-            onAddMore={handleAddMore}
-            onBill={handleBill}
-            isBilling={billOrder.isPending}
-            error={billOrder.error}
-          />
-        )}
-      </OrderDetailsModal>
+        onClose={closeDetails}
+        onAddMore={handleAddMore}
+        onBill={handleBill}
+        isBilling={billOrder.isPending}
+        billError={billOrder.error}
+      />
     </div>
   );
 }

@@ -1,0 +1,26 @@
+{
+  "food": [
+    { "name": "Pršut",         "category": "Ostalo", "portions": [{ "size": "100g", "price": 5.00 }] },
+    { "name": "Kulen",         "category": "Ostalo", "portions": [{ "size": "100g", "price": 4.00 }] },
+    { "name": "Gov. pečenica", "category": "Ostalo", "portions": [{ "size": "100g", "price": 7.00 }] },
+    { "name": "Suđuk",         "category": "Ostalo", "portions": [{ "size": "100g", "price": 5.00 }] },
+    { "name": "Sir",           "category": "Ostalo", "portions": [{ "size": "100g", "price": 3.00 }] },
+    { "name": "Riža",          "category": "Ostalo", "portions": [{ "size": "Porcija", "price": 1.50 }] },
+
+    { "name": "Sezonska salata", "category": "Salata", "portions": [{ "size": "Standardna", "price": 4.00 }] },
+    { "name": "Gurman salata",   "category": "Salata", "portions": [{ "size": "Standardna", "price": 5.00 }] },
+    { "name": "Portugal salata", "category": "Salata", "portions": [{ "size": "Standardna", "price": 5.00 }] },
+    { "name": "Mexico salata",   "category": "Salata", "portions": [{ "size": "Standardna", "price": 5.00 }] },
+    { "name": "Šopska salata",   "category": "Salata", "portions": [{ "size": "Standardna", "price": 5.00 }] },
+    { "name": "Grčka salata",    "category": "Salata", "portions": [{ "size": "Standardna", "price": 5.00 }] }
+  ],
+  "addons": [
+    { "name": "Feta",              "price": 1.00 },
+    { "name": "Kajmak",            "price": 2.50 },
+    { "name": "Kečap",             "price": 1.50 },
+    { "name": "Majoneza",          "price": 1.50 },
+    { "name": "Bešamel od gljiva", "price": 2.00 },
+    { "name": "Pomfrit",           "price": 4.00 },
+    { "name": "Ajvar",             "price": 1.50 }
+  ]
+}

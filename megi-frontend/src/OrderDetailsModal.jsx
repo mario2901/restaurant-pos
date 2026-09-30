@@ -5,6 +5,7 @@ export default function OrderDetailsModal({
   isOpen,
   onClose,
   title,
+  headerCenter,
   children,
 }) {
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function OrderDetailsModal({
       >
         <div className={styles.header}>
           <h2>{title}</h2>
+          <div className={styles.headerCenter}>{headerCenter}</div>
           <button
             className={styles.close}
             onClick={onClose}

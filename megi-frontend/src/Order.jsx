@@ -1,12 +1,22 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import style from "./style/Order.module.css";
 import { OrderContext } from "./context/OrderContext";
 import useSubmitOrder from "./hooks/useSubmit";
 import { toSubmitRequest } from "./data/api";
+
+const NOTE_TABLES = ["DOSTAVA", "PONIJETI"];
+export const ORDER_NOTE_MAX = 120;
+
 const formatPrice = (price) =>
   `${Number(price).toFixed(2).replace(".", ",")} KM`;
 
-export default function Order({ table, userId = 1, orderId, onSent }) {
+export default function Order({
+  table,
+  userId = 1,
+  orderId,
+
+  onSent,
+}) {
   const {
     items,
     totalPrice,
@@ -14,25 +24,42 @@ export default function Order({ table, userId = 1, orderId, onSent }) {
     updateItemQuantity,
     removeItemFromOrder,
     clearOrder,
+    finishOrder,
   } = useContext(OrderContext);
 
   const { mutate, isPending, isError, error, reset } = useSubmitOrder();
   const isEmpty = items.length === 0;
   const tableLabel = table?.label;
+  const hasNote = NOTE_TABLES.includes(tableLabel);
+  // "Dodaj još" na postojeću dostavu: predpopuni njenu napomenu
+  const [note, setNote] = useState(
+    () => table?.orders?.find((o) => o.id === orderId)?.note ?? "",
+  );
   const canSend = !isEmpty && !isPending && tableLabel && userId;
 
   function handleSend() {
-    mutate(toSubmitRequest({ items, table: tableLabel, userId, orderId }), {
-      onSuccess: (result) => {
-        // result = { order: OrderResponse, tickets: [Ticket] }
-        clearOrder();
-        onSent?.(result);
+    mutate(
+      toSubmitRequest({
+        items,
+        table: tableLabel,
+        userId,
+        orderId,
+        note: hasNote ? note : undefined,
+      }),
+      {
+        onSuccess: (result) => {
+          // result = { order: OrderResponse, tickets: [Ticket] }
+          // Prvo tiketi (RightSideBar otvara pregled), pa povratak na stolove.
+          onSent?.(result);
+          finishOrder();
+        },
       },
-    });
+    );
   }
 
   function handleClear() {
     clearOrder();
+    setNote("");
     reset();
   }
 
@@ -110,6 +137,30 @@ export default function Order({ table, userId = 1, orderId, onSent }) {
       )}
 
       <div className={style.footer}>
+        {hasNote && (
+          <label className={style.orderNote}>
+            <span className={style.orderNoteLabel}>
+              {tableLabel === "DOSTAVA" ? "Adresa / napomena" : "Ime / telefon"}
+              <span className={style.orderNoteCount}>
+                {note.length}/{ORDER_NOTE_MAX}
+              </span>
+            </span>
+            <input
+              type="text"
+              className={style.orderNoteInput}
+              value={note}
+              maxLength={ORDER_NOTE_MAX}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={
+                tableLabel === "DOSTAVA"
+                  ? "npr. Adresa, 061 123 456"
+                  : "npr. Ime, 063 111 222"
+              }
+              disabled={isPending}
+            />
+          </label>
+        )}
+
         {isError && <p className={style.error}>{error.message}</p>}
 
         <div className={style.totalRow}>

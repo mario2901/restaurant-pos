@@ -1,6 +1,7 @@
 package com.example.megibackend.Service;
 
 import com.example.megibackend.Dto.OrderItemRequest;
+import com.example.megibackend.Dto.StornoItemsRequest;
 import com.example.megibackend.Entity.*;
 import com.example.megibackend.Exceptions.BusinessRuleException;
 import com.example.megibackend.Exceptions.NotFoundException;
@@ -48,6 +49,7 @@ public class OrderService {
     private final DrinkRepository drinkRepository;
     private final AddonRepository addonRepository;
     private final UserRepository userRepository;
+    private final BusinessDayService businessDay;
 
     // ==================== ČITANJE ====================
 
@@ -61,6 +63,19 @@ public class OrderService {
     @Transactional(readOnly = true)
     public List<Order> getActive() {
         return orderRepository.findByStatusOrderByCreatedAtAsc(OrderStatus.NEW);
+    }
+
+    /**
+     * Sve narudžbe trenutnog radnog dana (otvorene, zatvorene i stornirane),
+     * najnovije prve. type je opcionalan (DINE_IN / DELIVERY).
+     */
+    @Transactional(readOnly = true)
+    public List<Order> getToday(OrderType type) {
+        LocalDateTime from = businessDay.currentStart();
+        LocalDateTime to = businessDay.currentEnd();
+        return type != null
+                ? orderRepository.findByTypeCreatedInRangeWithItems(type, from, to)
+                : orderRepository.findCreatedInRangeWithItems(from, to);
     }
 
     /** Otvorene narudžbe jedne vrste, npr. sve aktivne dostave. */
@@ -308,18 +323,31 @@ public class OrderService {
      * upiši košaricu i pošalji nove stavke na print.
      */
     public SubmitOutcome submit(String table, Long userId, List<OrderItemRequest> items) {
-        return submit(null, table, userId, items);
+        return submit(null, table, userId, null, items);
     }
 
     /**
      * Ako je orderId poslan, stavke idu na tu (otvorenu) narudžbu —
      * tako se dodaje na postojeću dostavu. Inače openForTable.
      */
-    public SubmitOutcome submit(Long orderId, String table, Long userId, List<OrderItemRequest> items) {
+    public SubmitOutcome submit(Long orderId, String table, Long userId, String note,
+                                List<OrderItemRequest> items) {
         Order order = orderId != null ? getEditable(orderId) : openForTable(table, userId);
+        applyNote(order, note);
         addItems(order.getId(), items);
         List<OrderItem> sent = sendNewItems(order.getId());
         return new SubmitOutcome(get(order.getId()), sent);
+    }
+
+    /**
+     * Napomena vrijedi samo za dostavu i za ponijeti. Prazan string ne briše
+     * postojeću napomenu (npr. "Dodaj još" bez ponovnog upisa adrese).
+     */
+    private void applyNote(Order order, String note) {
+        if (!order.isPacked() || note == null || note.isBlank()) return;
+        String clean = note.trim();
+        if (clean.length() > Order.NOTE_MAX) clean = clean.substring(0, Order.NOTE_MAX);
+        order.setNote(clean);
     }
 
     private Long requireId(Long id, String what) {
@@ -338,6 +366,9 @@ public class OrderService {
 
         if (item.getStatus() == ItemStatus.CANCELLED) {
             throw new BusinessRuleException("Stornirana stavka se ne može mijenjati.");
+        }
+        if (item.getStornoQuantity() > 0) {
+            throw new BusinessRuleException("Stavka ima storno — koristi storno umjesto promjene količine.");
         }
 
         int diff = newQuantity - item.getQuantity();
@@ -372,19 +403,141 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    /** Storniranje već poslane stavke — ostaje u bazi radi traga, ne ulazi u total. */
-    public OrderItem cancelItem(Long orderId, Long itemId) {
-        Order order = getEditable(orderId);
-        OrderItem item = findItem(order, itemId);
+    // ==================== STORNO ====================
 
-        if (item.getStatus() == ItemStatus.CANCELLED) {
-            throw new BusinessRuleException("Stavka je već stornirana.");
+    /** Jedan storniran dio stavke — za storno tikete. */
+    public record StornoLine(OrderItem item, int quantity) {
+    }
+
+    /** Rezultat storna: narudžba nakon izmjene + što je stornirano (za tikete). */
+    public record StornoOutcome(Order order, List<StornoLine> lines) {
+    }
+
+    /**
+     * Storno dijela ili cijele stavke.
+     *
+     * - radi na otvorenoj (NEW) i zatvorenoj (DONE) narudžbi iz današnjeg dana, za svaku ulogu
+     * - samo za stavke koje su poslane (SENT); neposlana se briše ili joj se mijenja količina
+     * - quantity = null -> stornira sve preostale komade
+     * - stavka ostaje u bazi (stornoQuantity), u promet ulazi samo nestornirani dio
+     * - ako na narudžbi ne ostane ništa aktivno -> narudžba CANCELED
+     */
+    public StornoOutcome stornoItem(Long orderId, Long itemId, Integer quantity) {
+        return stornoItems(orderId, List.of(new StornoItemsRequest.Line(itemId, quantity)));
+    }
+
+    /**
+     * Storno više označenih stavki u jednoj transakciji.
+     * Prvo se provjere SVE stavke, pa tek onda stornira — ako je ijedna neispravna,
+     * ništa se ne mijenja. Vraća sve stornirane dijelove za jedan set STORNO tiketa.
+     */
+    public StornoOutcome stornoItems(Long orderId, List<StornoItemsRequest.Line> requested) {
+        if (requested == null || requested.isEmpty()) {
+            throw new BusinessRuleException("Označi barem jednu stavku za storno.");
+        }
+        Order order = getStornable(orderId);
+
+        // 1) provjera svih stavki prije bilo kakve izmjene
+        List<StornoLine> plan = new ArrayList<>();
+        java.util.Set<Long> seen = new java.util.HashSet<>();
+        for (StornoItemsRequest.Line line : requested) {
+            if (!seen.add(line.itemId())) {
+                throw new BusinessRuleException("Stavka " + line.itemId() + " je označena dvaput.");
+            }
+            OrderItem item = findItem(order, line.itemId());
+
+            if (item.getStatus() == ItemStatus.CANCELLED || item.getActiveQuantity() == 0) {
+                throw new BusinessRuleException("Stavka '" + itemLabel(item) + "' je već stornirana.");
+            }
+            if (item.getStatus() == ItemStatus.NEW) {
+                throw new BusinessRuleException("Stavka '" + itemLabel(item)
+                        + "' još nije poslana na print — obriši je ili promijeni količinu.");
+            }
+
+            int qty = line.quantity() != null ? line.quantity() : item.getActiveQuantity();
+            if (qty <= 0 || qty > item.getActiveQuantity()) {
+                throw new BusinessRuleException("'" + itemLabel(item) + "': može se stornirati od 1 do "
+                        + item.getActiveQuantity() + " kom.");
+            }
+            plan.add(new StornoLine(item, qty));
         }
 
-        restoreStock(item);
-        item.setStatus(ItemStatus.CANCELLED);
+        // 2) storno
+        LocalDateTime now = LocalDateTime.now();
+        for (StornoLine line : plan) {
+            storno(line.item(), line.quantity(), now);
+        }
+
+        closeIfEmpty(order);
         orderRepository.save(order);
-        return item;
+        return new StornoOutcome(order, plan);
+    }
+
+    private String itemLabel(OrderItem item) {
+        if (item instanceof FoodOrderItem f && f.getFood() != null) return f.getFood().getName();
+        if (item instanceof DrinkOrderItem d && d.getDrink() != null) return d.getDrink().getName();
+        if (item instanceof AddonOrderItem a && a.getAddon() != null) return a.getAddon().getName();
+        return "#" + item.getId();
+    }
+
+    /**
+     * Storno cijele narudžbe ili samo hrane (FOOD = hrana + prilozi) / pića (DRINK).
+     * Radi na NEW i DONE (danas). Neposlane stavke u opsegu se brišu (nisu ni napravljene),
+     * poslane se storniraju. Ako ne ostane ništa aktivno -> narudžba CANCELED.
+     */
+    public StornoOutcome stornoOrder(Long orderId, StornoScope scope) {
+        Order order = getStornable(orderId);
+        LocalDateTime now = LocalDateTime.now();
+        List<StornoLine> lines = new ArrayList<>();
+        boolean changed = false;
+
+        for (OrderItem item : new ArrayList<>(order.getItems())) {
+            if (!scope.matches(item)) continue;
+            if (item.getStatus() == ItemStatus.CANCELLED || item.getActiveQuantity() == 0) continue;
+
+            if (item.getStatus() == ItemStatus.NEW) {
+                restoreStock(item, item.getActiveQuantity());
+                order.removeItem(item);
+                changed = true;
+                continue;
+            }
+
+            int qty = item.getActiveQuantity();
+            storno(item, qty, now);
+            lines.add(new StornoLine(item, qty));
+            changed = true;
+        }
+
+        if (!changed) {
+            throw new BusinessRuleException(switch (scope) {
+                case FOOD -> "Na narudžbi nema hrane za storno.";
+                case DRINK -> "Na narudžbi nema pića za storno.";
+                case ALL -> "Na narudžbi nema ništa za storno.";
+            });
+        }
+
+        closeIfEmpty(order);
+        orderRepository.save(order);
+        return new StornoOutcome(order, lines);
+    }
+
+    private void storno(OrderItem item, int qty, LocalDateTime now) {
+        restoreStock(item, qty);
+        item.setStornoQuantity(item.getStornoQuantity() + qty);
+        item.setStornoAt(now);
+        if (item.getActiveQuantity() == 0) {
+            item.setStatus(ItemStatus.CANCELLED);
+        }
+    }
+
+    /** Nema više ničeg za naplatu -> CANCELED (closedAt ostaje ako je već zatvorena). */
+    private void closeIfEmpty(Order order) {
+        boolean hasActive = order.getItems().stream()
+                .anyMatch(i -> i.getStatus() != ItemStatus.CANCELLED && i.getActiveQuantity() > 0);
+        if (!hasActive) {
+            order.setStatus(OrderStatus.CANCELED);
+            if (order.getClosedAt() == null) order.setClosedAt(LocalDateTime.now());
+        }
     }
 
     // ==================== SLANJE NA PRINT ====================
@@ -448,22 +601,88 @@ public class OrderService {
         return close(orderId);
     }
 
-    public Order cancel(Long orderId) {
-        Order order = getEditable(orderId);
+    /**
+     * Otkazivanje cijele otvorene (NEW) narudžbe = storno svega.
+     * Za zatvorenu (DONE) narudžbu koristi stornoOrder(ALL).
+     */
+    public StornoOutcome cancel(Long orderId) {
+        getEditable(orderId);
+        return stornoOrder(orderId, StornoScope.ALL);
+    }
 
-        order.getItems().stream()
-                .filter(i -> i.getStatus() != ItemStatus.CANCELLED)
-                .forEach(i -> {
-                    restoreStock(i);
-                    i.setStatus(ItemStatus.CANCELLED);
-                });
+    /**
+     * Automatsko zatvaranje zaostalih narudžbi (kraj radnog dana ili pokretanje servera).
+     * Za svaku NEW narudžbu kreiranu prije `before`:
+     *  - stavke koje nikad nisu poslane (NEW) se storniraju — nisu otišle u kuhinju/šank
+     *  - ako ostane barem jedna poslana stavka -> DONE (ulazi u promet)
+     *  - ako ne ostane ništa -> CANCELED
+     * closedAt ide na kraj kalendarskog dana narudžbe (ili sada, ako je to ranije),
+     * da promet ostane na danu kad je narudžba stvarno napravljena.
+     *
+     * @return broj zatvorenih narudžbi
+     */
+    public int autoCloseOpenBefore(LocalDateTime before) {
+        return closeStale(orderRepository.findByStatusCreatedBeforeWithItems(OrderStatus.NEW, before));
+    }
 
-        order.setStatus(OrderStatus.CANCELED);
-        order.setClosedAt(LocalDateTime.now());
-        return orderRepository.save(order);
+    /**
+     * Isto kao autoCloseOpenBefore, ali samo za jedan tip narudžbe
+     * (npr. DELIVERY u 15:30 — dostave napravljene nakon toga zatvara konobar).
+     */
+    public int autoCloseOpenBefore(LocalDateTime before, OrderType type) {
+        List<Order> stale = orderRepository.findByStatusCreatedBeforeWithItems(OrderStatus.NEW, before)
+                .stream()
+                .filter(o -> o.getType() == type)
+                .toList();
+        return closeStale(stale);
+    }
+
+    private int closeStale(List<Order> stale) {
+        if (stale.isEmpty()) return 0;
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Order order : stale) {
+            order.getItems().stream()
+                    .filter(i -> i.getStatus() == ItemStatus.NEW)
+                    .forEach(i -> {
+                        restoreStock(i);
+                        i.setStatus(ItemStatus.CANCELLED);
+                    });
+
+            boolean hasSent = order.getItems().stream()
+                    .anyMatch(i -> i.getStatus() == ItemStatus.SENT);
+
+            LocalDateTime endOfDay = order.getCreatedAt().toLocalDate().atTime(23, 59, 59);
+            order.setStatus(hasSent ? OrderStatus.DONE : OrderStatus.CANCELED);
+            order.setClosedAt(endOfDay.isBefore(now) ? endOfDay : now);
+        }
+
+        orderRepository.saveAll(stale);
+        return stale.size();
     }
 
     // ==================== POMOĆNE METODE ====================
+
+    /**
+     * Storno je dozvoljen na otvorenoj narudžbi (NEW) i na zatvorenoj (DONE)
+     * iz trenutnog radnog dana. Otkazana (CANCELED) se ne dira.
+     */
+    private Order getStornable(Long orderId) {
+        Order order = get(orderId);
+
+        if (order.getStatus() == OrderStatus.CANCELED) {
+            throw new BusinessRuleException("Narudžba " + orderId + " je otkazana — nema što stornirati.");
+        }
+
+        if (order.getStatus() == OrderStatus.DONE) {
+            LocalDateTime closedAt = order.getClosedAt() != null ? order.getClosedAt() : order.getCreatedAt();
+            if (closedAt.isBefore(businessDay.currentStart())) {
+                throw new BusinessRuleException(
+                        "Narudžba " + orderId + " je zatvorena prethodnih dana — storno nije moguć.");
+            }
+        }
+        return order;
+    }
 
     private Order getEditable(Long orderId) {
         Order order = get(orderId);
@@ -484,12 +703,16 @@ public class OrderService {
 
     /** Vraća zalihu pića kad se stavka briše ili stornira. */
     private void restoreStock(OrderItem item) {
+        restoreStock(item, item.getActiveQuantity());
+    }
+
+    private void restoreStock(OrderItem item, int qty) {
         // TODO PRIVREMENO: nema sta vracati jer se zaliha ni ne skida
         if (!stockCheckEnabled) return;
-        if (item.getStatus() == ItemStatus.CANCELLED) return;
+        if (item.getStatus() == ItemStatus.CANCELLED || qty <= 0) return;
         if (item instanceof DrinkOrderItem drinkItem && drinkItem.getDrink() != null) {
             Drink drink = drinkItem.getDrink();
-            drink.setStock(drink.getStock() + item.getQuantity());
+            drink.setStock(drink.getStock() + qty);
             drinkRepository.save(drink);
         }
     }

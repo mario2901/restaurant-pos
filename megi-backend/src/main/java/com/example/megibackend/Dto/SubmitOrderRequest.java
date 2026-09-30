@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -24,6 +25,10 @@ public record SubmitOrderRequest(
 
         @NotNull(message = "Konobar je obavezan.")
         Long userId,
+
+        // Samo za DOSTAVA / PONIJETI: adresa, telefon... Za stolove se ignorira.
+        @Size(max = 120, message = "Napomena može imati najviše 120 znakova.")
+        String note,
 
         @NotEmpty(message = "Narudžba mora imati barem jednu stavku.")
         @Valid

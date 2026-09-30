@@ -39,13 +39,39 @@ export function billOrder(id) {
   });
 }
 
-export function getActiveOrders() {
-  return request("/orders/active");
+// Storno dijela/cijele stavke; quantity undefined = sve preostalo.
+// Vraća { order, tickets } (STORNO_KITCHEN / STORNO_BAR).
+export function stornoItem(orderId, itemId, quantity) {
+  return request(`/orders/${orderId}/items/${itemId}/storno`, {
+    method: "PATCH",
+    body: JSON.stringify(quantity ? { quantity } : {}),
+  });
 }
 
-export function toSubmitRequest({ items, table, userId, orderId }) {
+// Više označenih stavki odjednom: items = [{ itemId, quantity? }], jedan set tiketa.
+export function stornoItems(orderId, items) {
+  return request(`/orders/${orderId}/storno/items`, {
+    method: "PATCH",
+    body: JSON.stringify({ items }),
+  });
+}
+
+// scope: "FOOD" (hrana + prilozi) | "DRINK" | "ALL". Vraća { order, tickets }.
+export function stornoOrder(orderId, scope) {
+  return request(`/orders/${orderId}/storno`, {
+    method: "PATCH",
+    body: JSON.stringify({ scope }),
+  });
+}
+
+export function getTodayOrders() {
+  return request("/orders/today");
+}
+
+export function toSubmitRequest({ items, table, userId, orderId, note }) {
   return {
     ...(orderId && { orderId }),
+    ...(note?.trim() && { note: note.trim() }),
     table,
     userId,
     items: items.map((line) => {

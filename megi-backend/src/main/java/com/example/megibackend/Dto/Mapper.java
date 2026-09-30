@@ -103,7 +103,7 @@ public final class Mapper {
 
         return new OrderItemResponse(
                 item.getId(), type, referenceId, name, detail,
-                item.getQuantity(), item.getPriceAtOrder(), item.getLineTotal(),
+                item.getQuantity(), item.getStornoQuantity(), item.getPriceAtOrder(), item.getLineTotal(),
                 item.getStatus(), note, options
         );
     }
@@ -118,6 +118,7 @@ public final class Mapper {
                 order.getStatus(),
                 order.getCreatedAt(),
                 order.getClosedAt(),
+                order.getNote(),
                 waiter != null ? waiter.getId() : null,
                 waiter != null ? waiter.getName() : null,
                 map(order.getItems(), Mapper::toDto),

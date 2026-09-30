@@ -39,6 +39,15 @@ public class OrderController {
         return Mapper.map(orderService.find(type, from, to), Mapper::toDto);
     }
 
+    /**
+     * Narudžbe trenutnog radnog dana (sve statuse), najnovije prve.
+     * /api/orders/today  ili  /api/orders/today?type=DELIVERY
+     */
+    @GetMapping("/today")
+    public List<OrderResponse> today(@RequestParam(required = false) OrderType type) {
+        return Mapper.map(orderService.getToday(type), Mapper::toDto);
+    }
+
     /** Sidebar s aktivnim narudžbama; /api/orders/active?type=DELIVERY za samo dostave. */
     @GetMapping("/active")
     public List<OrderResponse> active(@RequestParam(required = false) OrderType type) {
@@ -116,11 +125,53 @@ public class OrderController {
         return Mapper.toDto(orderService.get(id));
     }
 
-    /** Storniranje već poslane stavke. */
+    // ==================== STORNO ====================
+    // Radi na otvorenoj (NEW) i zatvorenoj (DONE) narudžbi iz današnjeg dana.
+    // Vraća narudžbu + STORNO tikete (kuhinja / šank) za print.
+
+    /**
+     * Storno dijela ili cijele stavke.
+     * PATCH /api/orders/{id}/items/{itemId}/storno   { "quantity": 1 }   -> 1 komad
+     * PATCH /api/orders/{id}/items/{itemId}/storno   {}                  -> sve preostalo
+     */
+    @PatchMapping("/{id}/items/{itemId}/storno")
+    public SendResult stornoItem(@PathVariable Long id,
+                                 @PathVariable Long itemId,
+                                 @Valid @RequestBody(required = false) StornoItemRequest request) {
+        Integer qty = request != null ? request.quantity() : null;
+        return stornoResult(orderService.stornoItem(id, itemId, qty));
+    }
+
+    /**
+     * Storno više označenih stavki odjednom — jedan set STORNO tiketa.
+     * PATCH /api/orders/{id}/storno/items
+     * { "items": [ { "itemId": 12, "quantity": 1 }, { "itemId": 15 } ] }
+     */
+    @PatchMapping("/{id}/storno/items")
+    public SendResult stornoItems(@PathVariable Long id, @Valid @RequestBody StornoItemsRequest request) {
+        return stornoResult(orderService.stornoItems(id, request.items()));
+    }
+
+    /** Stari endpoint: storno cijele stavke (isto kao PATCH .../storno bez količine). */
     @PostMapping("/{id}/items/{itemId}/cancel")
-    public OrderResponse cancelItem(@PathVariable Long id, @PathVariable Long itemId) {
-        orderService.cancelItem(id, itemId);
-        return Mapper.toDto(orderService.get(id));
+    public SendResult cancelItem(@PathVariable Long id, @PathVariable Long itemId) {
+        return stornoResult(orderService.stornoItem(id, itemId, null));
+    }
+
+    /**
+     * Storno narudžbe po dijelovima:
+     * PATCH /api/orders/{id}/storno   { "scope": "FOOD" }   -> hrana + prilozi
+     * PATCH /api/orders/{id}/storno   { "scope": "DRINK" }  -> piće
+     * PATCH /api/orders/{id}/storno   { "scope": "ALL" }    -> sve
+     */
+    @PatchMapping("/{id}/storno")
+    public SendResult stornoOrder(@PathVariable Long id, @Valid @RequestBody StornoOrderRequest request) {
+        return stornoResult(orderService.stornoOrder(id, request.scope()));
+    }
+
+    private SendResult stornoResult(OrderService.StornoOutcome outcome) {
+        List<Ticket> tickets = ticketService.forStorno(outcome.order(), outcome.lines());
+        return new SendResult(Mapper.toDto(orderService.get(outcome.order().getId())), tickets);
     }
 
     // ==================== SLANJE I ZATVARANJE ====================
@@ -132,7 +183,8 @@ public class OrderController {
     @PostMapping("/submit")
     public SendResult submit(@Valid @RequestBody SubmitOrderRequest request) {
         OrderService.SubmitOutcome outcome =
-                orderService.submit(request.orderId(), request.table(), request.userId(), request.items());
+                orderService.submit(request.orderId(), request.table(), request.userId(),
+                        request.note(), request.items());
         List<Ticket> tickets = ticketService.forSentItems(outcome.order().getId(), outcome.sent());
         return new SendResult(Mapper.toDto(outcome.order()), tickets);
     }
@@ -150,9 +202,10 @@ public class OrderController {
         return Mapper.toDto(orderService.close(id));
     }
 
+    /** Otkaži cijelu OTVORENU narudžbu (= storno ALL). Za zatvorenu koristi PATCH /{id}/storno. */
     @PostMapping("/{id}/cancel")
-    public OrderResponse cancel(@PathVariable Long id) {
-        return Mapper.toDto(orderService.cancel(id));
+    public SendResult cancel(@PathVariable Long id) {
+        return stornoResult(orderService.cancel(id));
     }
 
     // ==================== TIKETI ====================

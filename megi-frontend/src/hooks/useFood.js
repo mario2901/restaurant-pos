@@ -11,6 +11,9 @@ const useFood = () => {
   return useQuery({
     queryKey: ["food"],
     queryFn: fetchFood,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 };
 

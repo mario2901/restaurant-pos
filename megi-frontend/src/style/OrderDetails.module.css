@@ -141,3 +141,163 @@
   opacity: 0.6;
   cursor: wait;
 }
+
+.orderNote {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff6db;
+  border: 1px solid #f0d98a;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.storno {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  color: #a1261b;
+  background: #fdecea;
+  padding: 1px 6px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+/* ---------- Uredi / storno ---------- */
+.editBtn {
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: 2px solid #1d232b;
+  background: transparent;
+  color: #1d232b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.editBtnActive {
+  background: #1d232b;
+  color: #fff;
+}
+
+.itemStorno {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.selectable {
+  cursor: pointer;
+  border-radius: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
+  transition: background 0.12s;
+}
+
+.selectable:hover {
+  background: #faf2f1;
+}
+
+.selected {
+  background: #fdecea;
+  box-shadow: inset 4px 0 0 #c0392b;
+}
+
+.selected:hover {
+  background: #fbe1de;
+}
+
+.stornoLabel {
+  font-size: 13px;
+  color: #a1261b;
+  font-weight: 600;
+}
+
+.stornoStep {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #e0a39c;
+  background: #fff;
+  color: #a1261b;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stornoStep:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.stornoQty {
+  min-width: 48px;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.stornoBtn {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid #e0a39c;
+  background: #fdecea;
+  color: #a1261b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stornoBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.scopeActions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.stornoScopeBtn {
+  height: 52px;
+  border-radius: 12px;
+  border: 2px solid #a1261b;
+  background: transparent;
+  color: #a1261b;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stornoAll {
+  background: #a1261b;
+  color: #fff;
+}
+
+.danger {
+  height: 52px;
+  border-radius: 12px;
+  border: none;
+  background: #c0392b;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.danger:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

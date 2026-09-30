@@ -32,6 +32,64 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ===== filter tabovi (Sve / Dostava / Ponijeti) ===== */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: #151a20;
+  border: 1px solid var(--card-border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.tab:hover {
+  color: #e8edf3;
+  background: var(--card);
+}
+
+.tabActive,
+.tabActive:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.tabCount {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabActive .tabCount {
+  background: rgba(0, 0, 0, 0.22);
 }
 
 .ordersTitle {
@@ -189,4 +247,14 @@
   color: #e8edf3;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+.orderNote {
+  margin: 4px 0 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(61, 106, 160, 0.18);
+  font-size: 13px;
+  font-weight: 600;
+  word-break: break-word;
 }

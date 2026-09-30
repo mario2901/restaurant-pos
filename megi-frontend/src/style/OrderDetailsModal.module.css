@@ -21,8 +21,9 @@
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
   align-items: center;
   padding: 16px 20px;
   border-bottom: 1px solid #eee;
@@ -34,7 +35,13 @@
   color: black;
 }
 
+.headerCenter {
+  display: flex;
+  justify-content: center;
+}
+
 .close {
+  justify-self: end;
   background: none;
   border: none;
   font-size: 1.8rem;

@@ -91,4 +91,57 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                                            @Param("type") OrderType type,
                                                            @Param("from") LocalDateTime from,
                                                            @Param("to") LocalDateTime to);
+
+    /** Narudžbe radnog dana (sve statuse), sa stavkama, najnovije prve. from uključivo, to isključivo. */
+    @Query("""
+            select distinct o from Order o
+            left join fetch o.items
+            where o.createdAt >= :from and o.createdAt < :to
+            order by o.createdAt desc
+            """)
+    List<Order> findCreatedInRangeWithItems(@Param("from") LocalDateTime from,
+                                            @Param("to") LocalDateTime to);
+
+    @Query("""
+            select distinct o from Order o
+            left join fetch o.items
+            where o.type = :type
+              and o.createdAt >= :from and o.createdAt < :to
+            order by o.createdAt desc
+            """)
+    List<Order> findByTypeCreatedInRangeWithItems(@Param("type") OrderType type,
+                                                  @Param("from") LocalDateTime from,
+                                                  @Param("to") LocalDateTime to);
+
+    /** Zatvorene narudžbe u više statusa (DONE + CANCELED) — za storno u izvještaju. */
+    @Query("""
+            select distinct o from Order o
+            left join fetch o.items
+            where o.status in :statuses
+              and o.closedAt between :from and :to
+            """)
+    List<Order> findClosedWithItemsIn(@Param("statuses") java.util.Collection<OrderStatus> statuses,
+                                      @Param("from") LocalDateTime from,
+                                      @Param("to") LocalDateTime to);
+
+    @Query("""
+            select distinct o from Order o
+            left join fetch o.items
+            where o.status in :statuses
+              and o.type = :type
+              and o.closedAt between :from and :to
+            """)
+    List<Order> findClosedWithItemsInByType(@Param("statuses") java.util.Collection<OrderStatus> statuses,
+                                            @Param("type") OrderType type,
+                                            @Param("from") LocalDateTime from,
+                                            @Param("to") LocalDateTime to);
+
+    /** Otvorene narudžbe kreirane prije zadanog trenutka, sa stavkama (za automatsko zatvaranje). */
+    @Query("""
+            select distinct o from Order o
+            left join fetch o.items
+            where o.status = :status and o.createdAt < :before
+            """)
+    List<Order> findByStatusCreatedBeforeWithItems(@Param("status") OrderStatus status,
+                                                   @Param("before") LocalDateTime before);
 }

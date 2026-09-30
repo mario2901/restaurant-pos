@@ -11,6 +11,7 @@ import java.util.List;
  * @param total    null na kuhinjskom tiketu
  * @param takeaway true za dostavu i za ponijeti — hrana se pakira
  * @param notice   istaknuta napomena za vrh tiketa, npr. "ZA PONIJETI"; null ako je nema
+ * @param orderNote napomena narudžbe za dostavu / za ponijeti (adresa, telefon); null ako je nema
  */
 public record Ticket(TicketType type,
                      Long orderId,
@@ -20,7 +21,8 @@ public record Ticket(TicketType type,
                      List<TicketLine> lines,
                      BigDecimal total,
                      boolean takeaway,
-                     String notice) {
+                     String notice,
+                     String orderNote) {
 
     public boolean isEmpty() {
         return lines == null || lines.isEmpty();

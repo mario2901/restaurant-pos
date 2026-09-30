@@ -35,16 +35,7 @@ export default function Menu({ table, onBack }) {
         </button>
       </div>
 
-      {section === "hrana" ? (
-        <Food table={table} />
-      ) : (
-        <Drinks
-          onSelect={(drink) => {
-            // TODO: ovdje ide dodavanje u korpu (Redux) — zasad samo provjera
-            console.log("pice u korpu:", drink);
-          }}
-        />
-      )}
+      {section === "hrana" ? <Food table={table} /> : <Drinks />}
     </div>
   );
 }

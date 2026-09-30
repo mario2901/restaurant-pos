@@ -1,0 +1,82 @@
+PRIJAVA I NAVIGACIJA
+
+12. React Router
+Instalirati react-router, rute /login, / (POS) i /admin/*. Tok stol → meni ostaje u OrderContextu, ne ide u URL.
+
+13. AuthContext
+Čuva prijavljenog korisnika { id, name, role } iz POST /users/login. Daje user, isAdmin, login(), logout(). Spremiti u sessionStorage da refresh ne odjavi.
+
+14. LoginPin ekran
+PIN tipkovnica za tablet (4–6 znamenki, velike tipke), poruka greške s backenda, nakon prijave preusmjerava na /.
+
+15. Zaštita ruta
+RequireAuth (bez prijave → /login) i RequireRole("ADMIN") za /admin.
+
+16. userId iz prijave
+Order.jsx šalje userId iz AuthContexta umjesto hardkodirane 1, da izvještaj po konobaru bude točan.
+
+17. NavBar
+Ime konobara, prekidač POS / Admin (samo ADMIN), Odjava, badge s brojem pića pri kraju zalihe. Renderirati ga u layoutu.
+
+18. Backend provjera uloge
+Admin endpointi (food/drinks/addons izmjene, users, reports) provjeravaju ulogu na backendu (npr. header s userId + provjera role ili jednostavan token nakon logina).
+
+
+ADMIN
+
+19. AdminLayout
+Bočni meni s NavLink linkovima (Jela, Pića i zalihe, Prilozi, Konobari, Izvještaji, Povijest) i Outlet za sadržaj.
+
+20. Administracija jela (FoodAdmin)
+Lista svih jela (GET /food), prekidač Na meniju (PATCH availability), Uredi, Obriši. Ako backend odbije brisanje naručenog jela, ponuditi skidanje s menija.
+
+21. Forma jela (FoodForm / AddFood)
+Popraviti prazan AddFood.jsx stub (kriv import CSS-a, funkcija se zove Food). Novo jelo: naziv, opis, kategorija, barem jedna porcija. Uređivanje: naziv, opis, kategorija.
+
+22. Uređivanje porcija (PortionEditor)
+Tablica porcija jela s cijenom: dodaj, uredi, obriši (/food/{id}/portions, /food/portions/{id}).
+
+23. Uređivanje opcija (FoodOptionEditor)
+Opcije s doplatom po jelu i porciji (npr. "Cijela lepina"): dodaj, uredi, obriši (/food/{id}/options).
+
+24. Administracija pića (DrinkAdmin + DrinkForm)
+Lista pića po kategorijama sa zalihom, prekidač Na karti, Uredi, Obriši. Forma: naziv, cijena, kategorija, početna zaliha.
+
+25. Zalihe pića (StockDialog + LowStockPanel)
+Primka (POST /drinks/{id}/stock) i inventura (PUT /drinks/{id}/stock). Panel s pićima ispod praga (GET /drinks/low-stock).
+
+26. Administracija priloga (AddonAdmin + AddonForm)
+Lista priloga, prekidač Dostupno, Uredi (naziv, cijena), Obriši.
+
+27. Administracija korisnika (UserAdmin + UserForm + ChangePinDialog)
+Lista konobara i admina, novi korisnik (ime, PIN, uloga), izmjena, promjena PIN-a, deaktivacija umjesto brisanja.
+
+28. Izvještaj prometa (Reports + SalesReportView)
+Odabir perioda Danas / Dan / Mjesec / Raspon → /reports/today|day|month|range. Prikaz: broj narudžbi, ukupno, hrana/piće/prilozi, restoran vs dostava, top artikli, promet po konobaru.
+
+29. Izvještaj dostave (DeliveryReportView + DeliveryTotalBadge)
+/reports/delivery/* s listom dostava i top artiklima, upozorenje za nenaplaćene dostave, brzi iznos dostave za danas.
+
+30. Povijest narudžbi (OrderHistory)
+Pretraga GET /orders?type&from&to (i zatvorene i otkazane), read-only detalj s ponovnim ispisom računa.
+
+
+PRODUKCIJA
+
+31. Uključiti provjeru zaliha
+app.stock.check-enabled=true, testirati narudžbu pića bez zalihe i povrat zalihe kod storna/otkazivanja.
+
+32. Printer i ESC/POS ispis
+Kupiti 80 mm termalni printer, napraviti backend servis koji Ticket šalje na printer (kuhinja i šank), TicketPreview ostaje kao pregled.
+
+33. Prelazak na PostgreSQL
+Zamijeniti H2 PostgreSQL-om, podesiti application.properties, prebaciti podatke menija (seed skripte).
+
+34. Deploy u restoranu
+Frontend build serviran s istog hosta kao backend (Spring Boot static ili nginx), autostart na PC-u, fiksna IP adresa za tablete, dnevni backup baze.
+
+35. End-to-end test radnog dana
+Proći cijeli dan: stolovi, dostava, ponijeti, storno, račun, auto-zatvaranje u 23:59, izvještaji. Test na tabletu preko Wi-Fi-ja.
+
+36. Fiskalizacija (istraživanje)
+Istražiti može li se aplikacija spojiti na postojeći fiskalni printer/kasu i što je zakonski potrebno u BiH.

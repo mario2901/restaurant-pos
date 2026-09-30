@@ -23,5 +23,8 @@ public record DeliveryReport(LocalDateTime from,
                              long openOrderCount,
                              BigDecimal openTotal,
                              List<SalesRow> topItems,
-                             List<DeliveryOrderRow> orders) {
+                             List<DeliveryOrderRow> orders,
+                             long stornoQuantity,
+                             BigDecimal stornoTotal,
+                             List<SalesRow> stornoItems) {
 }
