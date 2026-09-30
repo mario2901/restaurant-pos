@@ -9,6 +9,9 @@ import java.util.List;
  * i ne-stornirane stavke, po zamrznutim cijenama (priceAtOrder).
  *
  * total = dineInTotal + deliveryTotal
+ *
+ * storno* = stornirani komadi u razdoblju (i sa zatvorenih i s otkazanih narudžbi),
+ * NE ulaze u total — prikazuju se odvojeno.
  */
 public record SalesReport(LocalDateTime from,
                           LocalDateTime to,
@@ -23,5 +26,8 @@ public record SalesReport(LocalDateTime from,
                           long deliveryCount,
                           BigDecimal deliveryTotal,
                           List<SalesRow> topItems,
-                          List<WaiterRow> byWaiter) {
+                          List<WaiterRow> byWaiter,
+                          long stornoQuantity,
+                          BigDecimal stornoTotal,
+                          List<SalesRow> stornoItems) {
 }

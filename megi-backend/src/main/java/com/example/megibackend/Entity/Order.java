@@ -32,6 +32,16 @@ public class Order {
     @Column(name = "order_type", nullable = false, length = 20)
     private OrderType type = OrderType.DINE_IN;
 
+    /** Maksimalna duljina napomene za dostavu / za ponijeti. */
+    public static final int NOTE_MAX = 120;
+
+    /**
+     * Napomena na razini narudžbe — samo za dostavu i za ponijeti
+     * (adresa, telefon, "zvoniti 2x"...). Za stolove je uvijek null.
+     */
+    @Column(name = "order_note", length = NOTE_MAX)
+    private String note;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime closedAt;

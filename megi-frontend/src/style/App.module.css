@@ -27,3 +27,42 @@ body {
   overflow-y: auto;
   padding: 20px;
 }
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.confirmText {
+  margin: 0;
+  color: #333;
+  line-height: 1.45;
+}
+
+.confirmActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.confirmSecondary,
+.confirmDanger {
+  height: 52px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.confirmSecondary {
+  background: transparent;
+  color: #1d232b;
+  border: 2px solid #1d232b;
+}
+
+.confirmDanger {
+  background: #c0392b;
+  color: #fff;
+  border: none;
+}

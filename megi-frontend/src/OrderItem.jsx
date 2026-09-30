@@ -51,10 +51,11 @@ export default function OrderItem({ item, onBack }) {
     addItemToOrder({
       item,
       portion: selectedPortion,
-      amount: counter,
+      type: "FOOD",
       options: selectedOptions,
       note,
     });
+
     onBack?.();
   }
 

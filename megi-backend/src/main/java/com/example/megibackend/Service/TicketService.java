@@ -19,7 +19,7 @@ import java.util.List;
  * Slaganje tiketa za print.
  *
  * Pravila (dogovorena kod dizajna modela):
- *  - kuhinjski tiket: samo hrana, s porcijom i napomenom, BEZ cijena
+ *  - kuhinjski tiket: hrana i prilozi, s porcijom i napomenom, BEZ cijena
  *  - šank tiket: sve stavke s cijenama
  *  - račun: sve ne-stornirane stavke narudžbe s ukupnim iznosom
  *  - dostava i za ponijeti: svi tiketi imaju takeaway=true i notice za vrh tiketa
@@ -75,20 +75,66 @@ public class TicketService {
                 .toList();
 
         return new Ticket(TicketType.BILL, order.getId(), order.getTable(), waiterName(order),
-                LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order));
+                LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order), orderNote(order));
+    }
+
+    // ==================== STORNO TIKETI ====================
+
+    /**
+     * Tiketi za upravo odrađeni storno:
+     *  - STORNO_KITCHEN: hrana i prilozi (kao kuhinjski tiket), bez cijena — kuhinja zna da stane
+     *  - STORNO_BAR: sve stornirano s iznosima — šank / blagajna
+     * Vraća samo tikete koji imaju redova.
+     */
+    public List<Ticket> forStorno(Order order, List<OrderService.StornoLine> stornoLines) {
+        List<Ticket> tickets = new ArrayList<>();
+        if (stornoLines == null || stornoLines.isEmpty()) return tickets;
+
+        String notice = stornoNotice(order);
+        LocalDateTime now = LocalDateTime.now();
+
+        List<TicketLine> kitchenLines = stornoLines.stream()
+                .filter(l -> isKitchenItem(l.item()))
+                .map(l -> kitchenLine(l.item(), l.quantity()))
+                .toList();
+        if (!kitchenLines.isEmpty()) {
+            tickets.add(new Ticket(TicketType.STORNO_KITCHEN, order.getId(), order.getTable(), waiterName(order),
+                    now, kitchenLines, null, order.isPacked(), notice, orderNote(order)));
+        }
+
+        List<TicketLine> barLines = stornoLines.stream()
+                .map(l -> {
+                    OrderItem item = l.item();
+                    String detail = (item instanceof FoodOrderItem food)
+                            ? joinDetail(portionSize(food), optionNames(food))
+                            : null;
+                    BigDecimal value = item.getPriceAtOrder() != null
+                            ? item.getPriceAtOrder().multiply(BigDecimal.valueOf(l.quantity()))
+                            : null;
+                    return new TicketLine(l.quantity(), nameOf(item), detail, value);
+                })
+                .toList();
+        tickets.add(new Ticket(TicketType.STORNO_BAR, order.getId(), order.getTable(), waiterName(order),
+                now, barLines, sum(barLines), order.isPacked(), notice, orderNote(order)));
+
+        return tickets;
+    }
+
+    private String stornoNotice(Order order) {
+        String packed = notice(order);
+        return packed != null ? "STORNO · " + packed : "STORNO";
     }
 
     // ==================== SLAGANJE TIKETA ====================
 
     private Ticket kitchenTicket(Order order, List<OrderItem> items) {
         List<TicketLine> lines = active(items).stream()
-                .filter(FoodOrderItem.class::isInstance)
-                .map(FoodOrderItem.class::cast)
-                .map(this::kitchenLine)
+                .filter(this::isKitchenItem)
+                .map(item -> kitchenLine(item, item.getActiveQuantity()))
                 .toList();
 
         return new Ticket(TicketType.KITCHEN, order.getId(), order.getTable(), waiterName(order),
-                LocalDateTime.now(), lines, null, order.isPacked(), notice(order));
+                LocalDateTime.now(), lines, null, order.isPacked(), notice(order), orderNote(order));
     }
 
     private Ticket barTicket(Order order, List<OrderItem> items) {
@@ -97,20 +143,28 @@ public class TicketService {
                 .toList();
 
         return new Ticket(TicketType.BAR, order.getId(), order.getTable(), waiterName(order),
-                LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order));
+                LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order), orderNote(order));
     }
 
     /** Kuhinja: porcija, opcije i napomena da kuhar zna što radi — cijena ga ne zanima. */
-    private TicketLine kitchenLine(FoodOrderItem item) {
-        String detail = joinDetail(portionSize(item), optionNames(item), item.getNote());
-        return new TicketLine(item.getQuantity(), nameOf(item), detail, null);
+    /** U kuhinju ide hrana i prilozi (pomfrit, kečap...), piće samo na šank. */
+    private boolean isKitchenItem(OrderItem item) {
+        return item instanceof FoodOrderItem || item instanceof AddonOrderItem;
+    }
+
+    /** Kuhinjski red: jelo s porcijom, opcijama i napomenom; prilog samo naziv. */
+    private TicketLine kitchenLine(OrderItem item, int quantity) {
+        String detail = (item instanceof FoodOrderItem food)
+                ? joinDetail(portionSize(food), optionNames(food), food.getNote())
+                : null;
+        return new TicketLine(quantity, nameOf(item), detail, null);
     }
 
     private TicketLine pricedLine(OrderItem item) {
         String detail = (item instanceof FoodOrderItem food)
                 ? joinDetail(portionSize(food), optionNames(food))
                 : null;
-        return new TicketLine(item.getQuantity(), nameOf(item), detail, item.getLineTotal());
+        return new TicketLine(item.getActiveQuantity(), nameOf(item), detail, item.getLineTotal());
     }
 
     // ==================== POMOĆNE METODE ====================
@@ -124,6 +178,7 @@ public class TicketService {
         if (items == null) return List.of();
         return items.stream()
                 .filter(i -> i.getStatus() != ItemStatus.CANCELLED)
+                .filter(i -> i.getActiveQuantity() > 0)
                 .toList();
     }
 
@@ -166,6 +221,13 @@ public class TicketService {
         if (order.isDelivery()) return "DOSTAVA — ZA PONIJETI";
         if (order.isTakeaway()) return "ZA PONIJETI";
         return null;
+    }
+
+    /** Adresa / telefon za dostavu i za ponijeti; za stolove null. */
+    private String orderNote(Order order) {
+        if (!order.isPacked()) return null;
+        String note = order.getNote();
+        return note == null || note.isBlank() ? null : note;
     }
 
     private String waiterName(Order order) {

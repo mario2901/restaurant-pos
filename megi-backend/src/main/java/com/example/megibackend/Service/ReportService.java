@@ -22,9 +22,12 @@ import java.util.*;
 /**
  * Statistika prometa.
  *
- * U obzir se uzimaju samo zatvorene (DONE) narudžbe i ne-stornirane stavke,
+ * U promet se uzimaju samo zatvorene (DONE) narudžbe i nestornirani komadi,
  * po cijeni zamrznutoj u priceAtOrder — promjena cijene na meniju ne mijenja
  * prošle izvještaje.
+ *
+ * Storno se prikazuje odvojeno (stornoQuantity / stornoTotal / stornoItems):
+ * stornirani komadi sa zatvorenih (DONE) i otkazanih (CANCELED) narudžbi u razdoblju.
  *
  * Agregacija se radi u Javi nad fetch-join upitom umjesto GROUP BY u SQL-u:
  * za promet jednog restorana to je nekoliko stotina redova dnevno, a kod je
@@ -55,8 +58,10 @@ public class ReportService {
     public SalesReport forRange(LocalDateTime from, LocalDateTime to) {
         validateRange(from, to);
 
-        List<Order> orders = orderRepository.findClosedWithItems(OrderStatus.DONE, from, to);
+        List<Order> closed = orderRepository.findClosedWithItemsIn(CLOSED_STATUSES, from, to);
+        List<Order> orders = done(closed);
         Totals totals = aggregate(orders);
+        StornoTotals storno = aggregateStorno(closed);
 
         long deliveryCount = 0;
         BigDecimal deliveryTotal = BigDecimal.ZERO;
@@ -95,7 +100,10 @@ public class ReportService {
                 deliveryCount,
                 money(deliveryTotal),
                 totals.topItems(),
-                waiterRows
+                waiterRows,
+                storno.quantity,
+                money(storno.total),
+                storno.items()
         );
     }
 
@@ -118,19 +126,21 @@ public class ReportService {
     public DeliveryReport deliveryForRange(LocalDateTime from, LocalDateTime to) {
         validateRange(from, to);
 
-        List<Order> closed = orderRepository.findClosedWithItemsByType(
-                OrderStatus.DONE, OrderType.DELIVERY, from, to);
+        List<Order> closedAll = orderRepository.findClosedWithItemsInByType(
+                CLOSED_STATUSES, OrderType.DELIVERY, from, to);
+        List<Order> closed = done(closedAll);
         List<Order> open = orderRepository.findByStatusAndTypeCreatedBetweenWithItems(
                 OrderStatus.NEW, OrderType.DELIVERY, from, to);
 
         Totals totals = aggregate(closed);
+        StornoTotals storno = aggregateStorno(closedAll);
 
         BigDecimal openTotal = open.stream()
                 .map(this::orderTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         List<DeliveryOrderRow> rows = new ArrayList<>();
-        for (Order order : closed) rows.add(toRow(order));
+        for (Order order : closedAll) rows.add(toRow(order)); // i otkazane (storno) — vidi se status
         for (Order order : open) rows.add(toRow(order));
         rows.sort(Comparator.comparing(DeliveryOrderRow::createdAt,
                 Comparator.nullsLast(Comparator.naturalOrder())));
@@ -146,7 +156,10 @@ public class ReportService {
                 open.size(),
                 money(openTotal),
                 totals.topItems(),
-                rows
+                rows,
+                storno.quantity,
+                money(storno.total),
+                storno.items()
         );
     }
 
@@ -164,6 +177,7 @@ public class ReportService {
             for (OrderItem item : order.getItems()) {
                 if (item.getStatus() == ItemStatus.CANCELLED) continue;
                 if (item.getPriceAtOrder() == null) continue;
+                if (item.getActiveQuantity() == 0) continue;
 
                 BigDecimal lineTotal = item.getLineTotal();
                 totals.total = totals.total.add(lineTotal);
@@ -177,10 +191,32 @@ public class ReportService {
                 }
 
                 totals.byItem.computeIfAbsent(itemName(item), SalesAccumulator::new)
-                        .add(item.getQuantity(), lineTotal);
+                        .add(item.getActiveQuantity(), lineTotal);
             }
         }
         return totals;
+    }
+
+    /** Stornirani komadi (i djelomični storno) — ne ulaze u promet, prikazuju se odvojeno. */
+    private StornoTotals aggregateStorno(List<Order> orders) {
+        StornoTotals storno = new StornoTotals();
+        for (Order order : orders) {
+            for (OrderItem item : order.getItems()) {
+                if (item.getStornoQuantity() <= 0 || item.getPriceAtOrder() == null) continue;
+                BigDecimal value = item.getStornoTotal();
+                storno.quantity += item.getStornoQuantity();
+                storno.total = storno.total.add(value);
+                storno.byItem.computeIfAbsent(itemName(item), SalesAccumulator::new)
+                        .add(item.getStornoQuantity(), value);
+            }
+        }
+        return storno;
+    }
+
+    private static final Set<OrderStatus> CLOSED_STATUSES = EnumSet.of(OrderStatus.DONE, OrderStatus.CANCELED);
+
+    private List<Order> done(List<Order> orders) {
+        return orders.stream().filter(o -> o.getStatus() == OrderStatus.DONE).toList();
     }
 
     /** Isto pravilo kao aggregate: bez storniranih i stavki bez cijene. */
@@ -259,6 +295,19 @@ public class ReportService {
         private final Map<String, SalesAccumulator> byItem = new HashMap<>();
 
         private List<SalesRow> topItems() {
+            return byItem.values().stream()
+                    .map(SalesAccumulator::toRow)
+                    .sorted(Comparator.comparing(SalesRow::total).reversed())
+                    .toList();
+        }
+    }
+
+    private static final class StornoTotals {
+        private long quantity;
+        private BigDecimal total = BigDecimal.ZERO;
+        private final Map<String, SalesAccumulator> byItem = new HashMap<>();
+
+        private List<SalesRow> items() {
             return byItem.values().stream()
                     .map(SalesAccumulator::toRow)
                     .sorted(Comparator.comparing(SalesRow::total).reversed())

@@ -1,7 +1,8 @@
 import styles from "./style/Drinks.module.css";
-import { useEffect, useState } from "react";
-import { API } from "./data/api.js";
+import { useState, useContext } from "react";
 
+import useDrink from "./hooks/useDrink.js";
+import { OrderContext } from "./context/OrderContext.jsx";
 // fallback ako /drinks/categories ne prođe — isti redoslijed kao enum na backendu
 const FALLBACK_TABS = [
   { value: "ALKOHOLNA_PICA", label: "Alkoholna pića" },
@@ -14,45 +15,19 @@ const FALLBACK_TABS = [
 const formatPrice = (price) =>
   `${Number(price).toFixed(2).replace(".", ",")} KM`;
 
-export default function Drinks({ onSelect }) {
-  const [drinks, setDrinks] = useState([]);
+export default function Drinks() {
   const [tabs, setTabs] = useState(FALLBACK_TABS);
   const [activeTab, setActiveTab] = useState(FALLBACK_TABS[0].value);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchDrinks() {
-      try {
-        const [drinksRes, categoriesRes] = await Promise.all([
-          fetch(`${API}/drinks?onlyAvailable=true`),
-          fetch(`${API}/drinks/categories`),
-        ]);
-
-        if (!drinksRes.ok) throw new Error("Greška pri učitavanju pića.");
-        setDrinks(await drinksRes.json());
-
-        // kategorije nisu kritične — ako puknu, ostaje fallback
-        if (categoriesRes.ok) {
-          const categories = await categoriesRes.json();
-          if (categories.length > 0) {
-            setTabs(categories);
-            setActiveTab(categories[0].value);
-          }
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchDrinks();
-  }, []);
-
+  const { data: drinks = [], isPending, error } = useDrink();
+  const { addItemToOrder } = useContext(OrderContext);
   const countOf = (value) => drinks.filter((d) => d.category === value).length;
   const visibleDrinks = drinks.filter((d) => d.category === activeTab);
 
-  if (loading) return <p className={styles.info}>Učitavanje…</p>;
+  function handleAddDrink(drink) {
+    addItemToOrder({ item: drink, type: "DRINK" });
+  }
+  if (isPending) return <p className={styles.info}>Učitavanje…</p>;
   if (error) return <p className={styles.info}>{error}</p>;
 
   return (
@@ -80,7 +55,7 @@ export default function Drinks({ onSelect }) {
             <button
               key={drink.id}
               className={styles.card}
-              onClick={() => onSelect?.(drink)}
+              onClick={() => handleAddDrink(drink)}
             >
               <h3 className={styles.name}>{drink.name}</h3>
               <span className={styles.price}>{formatPrice(drink.price)}</span>
