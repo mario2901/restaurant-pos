@@ -1,0 +1,50 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #15191f;
+}
+
+.main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20rem;
+  background-color: #1d232b;
+  border: 2px solid #4f7fb5;
+  border-radius: 1rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.header h2 {
+  text-align: center;
+  color: #e8edf3;
+}
+
+.header form {
+  display: flex;
+  flex-direction: column;
+}
+
+.header button {
+  background-color: #1d232b;
+  border-radius: 5px;
+  border: 2px solid #4f7fb5;
+  color: #e8edf3;
+  padding: 10px;
+}
+
+.header input {
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.error {
+  color: red;
+}

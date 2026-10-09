@@ -49,7 +49,7 @@ export default function Tables({ reon, onReonChange, onSelectTable }) {
 
   function handleTableClick(label, name) {
     const orders = ordersFor(label);
-    console.log(label, name);
+
     if (orders.length === 0) {
       onSelectTable({ label, name, orders });
     } else {

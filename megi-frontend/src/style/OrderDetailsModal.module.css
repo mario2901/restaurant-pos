@@ -21,25 +21,56 @@
 }
 
 .header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 12px;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.header h2 {
-  margin: 0;
-  font-size: 1.2rem;
-  color: black;
-}
-
-.headerCenter {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  color: #26272a;
+}
+
+/* Uredi + X guranje udesno */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #424447;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.iconButton:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid #1f2937;
+  outline-offset: 2px;
+}
 .close {
   justify-self: end;
   background: none;
@@ -63,4 +94,31 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+/* Prebaci stol: ikona + dropdown pored nje */
+.transfer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButtonActive {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.transferSelect {
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+  color: #26272a;
+  cursor: pointer;
+}
+
+.transferSelect:disabled {
+  opacity: 0.6;
+  cursor: default;
 }

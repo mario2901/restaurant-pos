@@ -66,3 +66,17 @@ body {
   color: #fff;
   border: none;
 }
+
+.profil {
+  height: 5rem;
+  width: 5rem;
+  margin-top: 1rem;
+  margin-left: 0.5rem;
+  border-radius: 50%;
+  background-color: #1d232b;
+  border: 2px solid #2e3742;
+  color: #cfd7e0;
+}
+.profil:hover {
+  border: 2px solid #4f7fb5;
+}

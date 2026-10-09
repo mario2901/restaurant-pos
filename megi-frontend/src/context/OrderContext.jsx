@@ -15,6 +15,7 @@ export const OrderContext = createContext({
   pendingTable: null,
   confirmTableChange: () => {},
   cancelTableChange: () => {},
+  retargetTable: () => {},
   // tiketi za pregled/print (Naruči, Račun, Storno) — modal je u App.jsx
   tickets: null,
   showTickets: () => {},
@@ -208,6 +209,17 @@ export default function OrderContextProvider({ children }) {
     setPendingTable(null);
     setTable(null);
   }
+  function retargetTable(orderId, newLabel) {
+    setTable((t) =>
+      t?.orderId === orderId
+        ? {
+            ...t,
+            label: newLabel,
+            name: newLabel === "PONIJETI" ? "Za ponijeti" : newLabel,
+          }
+        : t,
+    );
+  }
 
   function handleAddItemToOrder({
     item,
@@ -255,6 +267,7 @@ export default function OrderContextProvider({ children }) {
     pendingTable,
     confirmTableChange,
     cancelTableChange,
+    retargetTable,
     tickets,
     showTickets,
     closeTickets,

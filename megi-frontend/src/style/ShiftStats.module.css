@@ -1,0 +1,36 @@
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #1a1f26;
+}
+
+.value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  color: #8b96a5;
+  font-size: 12px;
+}
+
+.message,
+.error {
+  margin: 0;
+  color: #8b96a5;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #ff6b6b;
+}

@@ -1,0 +1,61 @@
+.reportGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* jednake širine */
+  grid-auto-rows: 1fr; /* jednake visine */
+  gap: 10px;
+}
+
+.reportBtn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 82px;
+  padding: 14px;
+  border: 1px solid #2e3742;
+  border-radius: 8px;
+  background: #1a1f26;
+  color: #e8edf3;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.reportBtn svg {
+  color: #e8590c;
+}
+
+.reportBtn:hover:not(:disabled) {
+  border-color: #e8590c;
+  background: #1f262e;
+}
+
+.reportBtn:disabled {
+  background: transparent;
+  color: #8b96a5;
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+.reportBtn:disabled svg {
+  color: inherit;
+}
+
+.reportBtnText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reportBtnLabel {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.reportBtnNote {
+  font-size: 11px;
+}

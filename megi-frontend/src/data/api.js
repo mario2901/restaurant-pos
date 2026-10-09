@@ -1,5 +1,5 @@
 export const API = `http://${window.location.hostname}:8080/api`;
-
+import { useLogout } from "../hooks/useLogin.js";
 async function request(path, options = {}) {
   const res = await fetch(`${API}${path}`, {
     headers: {
@@ -93,4 +93,44 @@ export function toSubmitRequest({ items, table, userId, orderId, note }) {
       };
     }),
   };
+}
+
+export function changeOrderTable(id, table) {
+  return request(`/orders/${id}/table`, {
+    method: "PATCH",
+    body: JSON.stringify({ table }),
+  });
+}
+
+export function moveOrderToTakeaway(id, note = "") {
+  return request(`/orders/${id}/takeaway`, {
+    method: "POST",
+    body: JSON.stringify({ note }),
+  });
+}
+
+export function login(pin) {
+  return request("/users/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pin }),
+  });
+}
+
+export function todayReport() {
+  const logout = useLogout();
+  logout();
+  return request("/reports/today");
+}
+
+export function todayDelivery() {
+  return request("/reports/delivery/today");
+}
+
+// Konobar mijenja svoj PIN (4-6 znamenki, mora biti jedinstven).
+export function changePin(id, pin) {
+  return request(`/users/${id}/pin`, {
+    method: "PATCH",
+    body: JSON.stringify({ pin }),
+  });
 }

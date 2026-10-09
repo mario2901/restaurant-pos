@@ -1,0 +1,111 @@
+.page {
+  display: flex;
+  height: 100vh;
+  background-color: #15191f;
+}
+
+/* Sidebar zauzima 25%, pa je ostatak 75% - content je pola toga */
+.content {
+  flex: 0 0 37.5%;
+  min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: clamp(12px, 1.5vw, 24px);
+  box-sizing: border-box;
+  color: #e8edf3;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* ===== upozorenje: moje otvorene narudžbe ===== */
+
+.warning {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 212, 59, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 212, 59, 0.08);
+  color: #ffd43b;
+  font-size: 0.9rem;
+}
+
+.warningHint {
+  color: #8b96a5;
+  font-size: 0.8rem;
+}
+
+/* ===== filteri i pretraga ===== */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid #2e3742;
+  border-radius: 10px;
+  background: #1a1f26;
+}
+
+.segment {
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #8b96a5;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segment:hover:not(:disabled) {
+  color: #e8edf3;
+  background: #232a33;
+}
+
+.segmentActive,
+.segmentActive:hover:not(:disabled) {
+  background: #e8590c;
+  color: #fff;
+}
+
+.segment:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.search {
+  flex: 1;
+  min-width: 140px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #2e3742;
+  border-radius: 8px;
+  background: #1a1f26;
+  color: #e8edf3;
+  font: inherit;
+}
+
+.search::placeholder {
+  color: #8b96a5;
+}
+
+.search:focus {
+  outline: none;
+  border-color: #e8590c;
+}

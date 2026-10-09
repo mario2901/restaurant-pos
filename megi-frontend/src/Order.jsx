@@ -3,7 +3,7 @@ import style from "./style/Order.module.css";
 import { OrderContext } from "./context/OrderContext";
 import useSubmitOrder from "./hooks/useSubmit";
 import { toSubmitRequest } from "./data/api";
-
+import { useMe } from "./hooks/useLogin";
 const NOTE_TABLES = ["DOSTAVA", "PONIJETI"];
 export const ORDER_NOTE_MAX = 120;
 
@@ -12,7 +12,7 @@ const formatPrice = (price) =>
 
 export default function Order({
   table,
-  userId = 1,
+
   orderId,
 
   onSent,
@@ -26,7 +26,8 @@ export default function Order({
     clearOrder,
     finishOrder,
   } = useContext(OrderContext);
-
+  const { data: user } = useMe();
+  console.log(user);
   const { mutate, isPending, isError, error, reset } = useSubmitOrder();
   const isEmpty = items.length === 0;
   const tableLabel = table?.label;
@@ -35,14 +36,14 @@ export default function Order({
   const [note, setNote] = useState(
     () => table?.orders?.find((o) => o.id === orderId)?.note ?? "",
   );
-  const canSend = !isEmpty && !isPending && tableLabel && userId;
+  const canSend = !isEmpty && !isPending && tableLabel && user.id;
 
   function handleSend() {
     mutate(
       toSubmitRequest({
         items,
         table: tableLabel,
-        userId,
+        userId: user.id,
         orderId,
         note: hasNote ? note : undefined,
       }),

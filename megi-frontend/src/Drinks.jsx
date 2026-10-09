@@ -3,32 +3,27 @@ import { useState, useContext } from "react";
 
 import useDrink from "./hooks/useDrink.js";
 import { OrderContext } from "./context/OrderContext.jsx";
-// fallback ako /drinks/categories ne prođe — isti redoslijed kao enum na backendu
-const FALLBACK_TABS = [
-  { value: "ALKOHOLNA_PICA", label: "Alkoholna pića" },
-  { value: "VINA", label: "Vina" },
-  { value: "PIVA", label: "Piva" },
-  { value: "SOKOVI", label: "Sokovi" },
-  { value: "TOPLI_NAPITCI", label: "Topli napitci" },
-];
+import useDrinkCat from "./hooks/useDrinkCat.js";
 
 const formatPrice = (price) =>
   `${Number(price).toFixed(2).replace(".", ",")} KM`;
 
 export default function Drinks() {
-  const [tabs, setTabs] = useState(FALLBACK_TABS);
-  const [activeTab, setActiveTab] = useState(FALLBACK_TABS[0].value);
-
+  const { data: tabs = [], isPendingCat, errorCat } = useDrinkCat();
+  console.log(tabs);
   const { data: drinks = [], isPending, error } = useDrink();
   const { addItemToOrder } = useContext(OrderContext);
+  const [activeTab, setActiveTab] = useState("SOKOVI");
   const countOf = (value) => drinks.filter((d) => d.category === value).length;
   const visibleDrinks = drinks.filter((d) => d.category === activeTab);
 
   function handleAddDrink(drink) {
     addItemToOrder({ item: drink, type: "DRINK" });
   }
+  if (isPendingCat) return <p className={styles.info}>Učitavanje…</p>;
+  if (errorCat) return <p className={styles.info}>{errorCat.message}</p>;
   if (isPending) return <p className={styles.info}>Učitavanje…</p>;
-  if (error) return <p className={styles.info}>{error}</p>;
+  if (error) return <p className={styles.info}>{error.message}</p>;
 
   return (
     <div>

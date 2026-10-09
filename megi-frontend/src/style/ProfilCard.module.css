@@ -1,0 +1,17 @@
+/* Zajednička kartica za sekcije u sidebaru profila (promet, izvještaji, PIN) */
+.card {
+  padding: 16px;
+  border-radius: 12px;
+  background: #232a33;
+  border: 1px solid #2e3742;
+  color: #e8edf3;
+}
+
+.cardTitle {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b96a5;
+}

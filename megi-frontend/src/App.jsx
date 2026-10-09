@@ -3,9 +3,10 @@ import RightSideBar from "./RightSideBar";
 import Tables from "./Tables.jsx";
 import Menu from "./Menu.jsx";
 import OrderDetailsModal from "./OrderDetailsModal.jsx";
-import TicketPreview from "./TicketPreview.jsx";
 import { useContext, useState } from "react";
 import { OrderContext } from "./context/OrderContext.jsx";
+import { useLogout } from "./hooks/useLogin.js";
+import { useNavigate } from "react-router";
 
 const targetName = (table) => {
   if (!table) return "stolove";
@@ -16,6 +17,8 @@ const targetName = (table) => {
 
 export default function App() {
   const [reon, setReon] = useState("unutra");
+  const logout = useLogout();
+  const navigate = useNavigate();
   // Odabrani stol živi u OrderContext-u (zajedno s košaricom)
   const {
     table,
@@ -24,13 +27,27 @@ export default function App() {
     pendingTable,
     confirmTableChange,
     cancelTableChange,
-    tickets,
-    closeTickets,
   } = useContext(OrderContext);
-
+  function handleLogout() {
+    logout();
+  }
+  function handleProfil() {
+    navigate("/profil");
+  }
   return (
     <div className={styles.app}>
       <div className={styles.global}>
+        {!table && (
+          <>
+            <button className={styles.profil} onClick={handleProfil}>
+              Profil
+            </button>
+            <button className={styles.profil} onClick={handleLogout}>
+              Odjava
+            </button>
+          </>
+        )}
+
         <main className={styles.main}>
           {table ? (
             <Menu table={table} onBack={() => selectTable(null)} />
@@ -79,14 +96,6 @@ export default function App() {
             </div>
           </div>
         )}
-      </OrderDetailsModal>
-
-      <OrderDetailsModal
-        isOpen={!!tickets}
-        onClose={closeTickets}
-        title="Tiketi za print"
-      >
-        {tickets && <TicketPreview tickets={tickets} onDone={closeTickets} />}
       </OrderDetailsModal>
     </div>
   );

@@ -78,6 +78,31 @@ public class TicketService {
                 LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order), orderNote(order));
     }
 
+    public List<Ticket> forTakeawayMove(Long orderId, String fromTable){
+        Order order = getOrder(orderId);
+        Ticket base = kitchenTicket(order, order.getItems());
+        if(base.isEmpty()) return List.of();
+
+
+        String notice = "Za PONIJETI - bio je stol " + fromTable;
+        return List.of(new Ticket(TicketType.KITCHEN, order.getId(), order.getTable(), waiterName(order),
+                LocalDateTime.now(), base.lines(), null,  true, notice, orderNote(order)));
+    }
+
+    /**
+     * Reprint kuhinjskog tiketa kad se "za ponijeti" ipak prebaci na stol:
+     * kuhinja zna da više ne pakira. Prazna lista ako nema hrane/priloga.
+     */
+    public List<Ticket> forTakeawayToTable(Long orderId) {
+        Order order = getOrder(orderId);
+        Ticket base = kitchenTicket(order, order.getItems());
+        if (base.isEmpty()) return List.of();
+
+        String notice = "NA STOL " + order.getTable() + " · NE PAKIRATI (bilo za ponijeti)";
+        return List.of(new Ticket(TicketType.KITCHEN, order.getId(), order.getTable(), waiterName(order),
+                LocalDateTime.now(), base.lines(), null, false, notice, null));
+    }
+
     // ==================== STORNO TIKETI ====================
 
     /**

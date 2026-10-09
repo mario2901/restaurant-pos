@@ -99,14 +99,14 @@ export const kat = [
   },
   {
     id: 23,
-    name: "T1",
+    name: "K-T1",
   },
   {
     id: 24,
-    name: "T2",
+    name: "K-T2",
   },
   {
     id: 25,
-    name: "T3",
+    name: "K-T3",
   },
 ];

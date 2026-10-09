@@ -1,0 +1,53 @@
+.sideBar {
+  flex: 0 0 25%;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(12px, 1.2vw, 20px);
+  box-sizing: border-box;
+  background-color: #1a1f26;
+  border-right: 2px solid #2e3742;
+  color: #e8edf3;
+}
+
+.nav {
+  display: flex;
+  gap: 8px;
+}
+
+.navBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  border: 1px solid #2e3742;
+  border-radius: 8px;
+  background: #232a33;
+  color: #e8edf3;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.navBtn:hover {
+  border-color: #e8590c;
+}
+
+.logout {
+  color: #ff6b6b;
+}
+
+.logout:hover {
+  border-color: #ff6b6b;
+}
+
+.name {
+  margin: 0;
+  text-align: center;
+  font-size: 1.4rem;
+}

@@ -150,6 +150,51 @@ public class OrderService {
                 .orElseGet(() -> create(label, userId));
     }
 
+    /**
+     * Premješta otvorenu narudžbu na drugi obični stol.
+     * Dozvoljeno: stol -> stol i za ponijeti -> stol. Dostava se ne premješta.
+     * Vraća stari stol (controller po njemu odlučuje treba li reprint za kuhinju).
+     */
+    public String changeTable(Long orderId, String newTable) {
+        Order order = getEditable(orderId);
+        String fromTable = order.getTable();
+        String label = normalizeTable(newTable);
+
+        if (label.equals(fromTable)) {
+            return fromTable;
+        }
+        if (OrderType.isDeliveryTable(fromTable)) {
+            throw new BusinessRuleException("Dostava se ne može premjestiti na stol.");
+        }
+        if (OrderType.isMultiOrderTable(label)) {
+            throw new BusinessRuleException("Na dostavu / za ponijeti se ne prebacuje ovdje — koristi opciju \"Za ponijeti\".");
+        }
+        if (!orderRepository.findByTableAndStatus(label, OrderStatus.NEW).isEmpty()) {
+            throw new BusinessRuleException("Stol " + label + " već ima otvorenu narudžbu.");
+        }
+
+        order.setTable(label);
+        // napomena (ime/telefon) vrijedi samo za dostavu i za ponijeti — za stolove je uvijek null
+        if (OrderType.isTakeawayTable(fromTable)) {
+            order.setNote(null);
+        }
+        orderRepository.save(order);
+        return fromTable;
+    }
+
+    public String moveToTakeaway(Long orderId, String note ){
+        Order order = getEditable(orderId);
+        String fromTable = order.getTable();
+
+        if(OrderType.isMultiOrderTable(fromTable)){
+            throw new BusinessRuleException("Narudzba je vec na " + fromTable);
+        }
+        order.setTable(OrderType.TAKEAWAY_TABLE);
+        applyNote(order, note);
+        orderRepository.save(order);
+        return fromTable;
+    }
+
     // ==================== DODAVANJE STAVKI ====================
 
     public FoodOrderItem addFood(Long orderId, Long foodId, Long portionId, int quantity, String note) {
@@ -356,6 +401,10 @@ public class OrderService {
         }
         return id;
     }
+
+    // promjena stola
+
+
 
     // ==================== IZMJENA STAVKI ====================
 

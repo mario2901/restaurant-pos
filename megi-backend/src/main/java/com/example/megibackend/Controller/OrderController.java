@@ -8,6 +8,7 @@ import com.example.megibackend.Service.OrderService;
 import com.example.megibackend.Service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.lang.annotation.DeclareWarning;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -200,6 +201,28 @@ public class OrderController {
     @PostMapping("/{id}/close")
     public OrderResponse close(@PathVariable Long id) {
         return Mapper.toDto(orderService.close(id));
+    }
+
+    // MIJENJANJE STOLA
+    /**
+     * Stol -> stol ili za ponijeti -> stol.
+     * Kad narudžba dolazi sa "za ponijeti", vraća se i reprint za kuhinju (ne pakirati).
+     */
+    @PatchMapping("/{id}/table")
+    public SendResult changeTable(@PathVariable Long id, @Valid @RequestBody ChangeTableRequest request) {
+        String fromTable = orderService.changeTable(id, request.table());
+        List<Ticket> tickets = OrderType.isTakeawayTable(fromTable)
+                ? ticketService.forTakeawayToTable(id)
+                : List.of();
+        return new SendResult(Mapper.toDto(orderService.get(id)), tickets);
+    }
+
+    // SA STOLA ZA PONIJETI
+    @PostMapping("/{id}/takeaway")
+    public SendResult moveToTakeaway(@PathVariable Long id, @RequestBody(required = false) TakeawayRequest request){
+        String fromTable = orderService.moveToTakeaway(id, request != null ? request.note() : null);
+        List<Ticket> tickets= ticketService.forTakeawayMove(id, fromTable);
+        return new SendResult(Mapper.toDto(orderService.get(id)), tickets);
     }
 
     /** Otkaži cijelu OTVORENU narudžbu (= storno ALL). Za zatvorenu koristi PATCH /{id}/storno. */

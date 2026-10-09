@@ -305,9 +305,17 @@ export default function OrderDetails({
             <button
               type="button"
               className={styles.primary}
-              onClick={() => setConfirming(true)}
+              // zatvorena narudžba: samo ponovni print, ne treba potvrda zatvaranja
+              onClick={() =>
+                order.status === "DONE" ? onBill(order) : setConfirming(true)
+              }
+              disabled={isBilling}
             >
-              Račun
+              {order.status === "DONE"
+                ? isBilling
+                  ? "Šaljem..."
+                  : "Ponovi račun"
+                : "Račun"}
             </button>
           )}
         </div>

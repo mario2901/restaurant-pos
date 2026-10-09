@@ -26,6 +26,7 @@ export default function Food() {
   function handleAddAddon(addon) {
     addItemToOrder({ item: addon, type: "ADDON" });
   }
+
   return (
     <div>
       {selectedItem && (
