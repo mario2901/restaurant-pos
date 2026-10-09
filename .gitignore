@@ -1,0 +1,21 @@
+# Windows
+desktop.ini
+Thumbs.db
+
+# Slike i materijali klijenta
+meni/
+*.jpeg
+*.jpg
+
+# Lične bilješke i radni dokumenti
+taskovi.txt
+printer.txt
+API.txt
+*.pdf
+megi-frontend-arhitektura.html
+
+# Jednokratne skripte za import menija
+fix-meni.mjs
+fix-riza.mjs
+import-meni.mjs
+meni-hrana_3.json
