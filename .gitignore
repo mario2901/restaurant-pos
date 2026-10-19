@@ -19,3 +19,6 @@ fix-meni.mjs
 fix-riza.mjs
 import-meni.mjs
 meni-hrana_3.json
+
+# Editor
+.vscode/
