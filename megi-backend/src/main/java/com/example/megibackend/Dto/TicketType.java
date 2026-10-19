@@ -5,5 +5,6 @@ public enum TicketType {
     BAR,      // šank: sve stavke s cijenama
     BILL,          // račun za stol: sve ne-stornirane stavke narudžbe
     STORNO_KITCHEN, // storno za kuhinju: hrana i prilozi, bez cijena
-    STORNO_BAR      // storno za šank: sve stornirane stavke s iznosima
+    STORNO_BAR,     // storno za šank: sve stornirane stavke s iznosima
+    REPORT          // izvještaj (slaže ga frontend) — ide na šank
 }

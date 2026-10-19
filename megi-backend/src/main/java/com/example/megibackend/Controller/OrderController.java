@@ -5,6 +5,7 @@ import com.example.megibackend.Entity.Order;
 import com.example.megibackend.Entity.OrderItem;
 import com.example.megibackend.Entity.OrderType;
 import com.example.megibackend.Service.OrderService;
+import com.example.megibackend.Service.PrintService;
 import com.example.megibackend.Service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,13 @@ public class OrderController {
 
     private final OrderService orderService;
     private final TicketService ticketService;
+    private final PrintService printService;
+
+    /** Tiketi idu odmah na printere; status printa ide frontendu uz narudžbu. */
+    private SendResult printed(OrderResponse order, List<Ticket> tickets) {
+        PrintService.Outcome print = printService.tryPrint(tickets);
+        return new SendResult(order, tickets, print.printed(), print.error());
+    }
 
     // ==================== ČITANJE ====================
 
@@ -172,14 +180,14 @@ public class OrderController {
 
     private SendResult stornoResult(OrderService.StornoOutcome outcome) {
         List<Ticket> tickets = ticketService.forStorno(outcome.order(), outcome.lines());
-        return new SendResult(Mapper.toDto(orderService.get(outcome.order().getId())), tickets);
+        return printed(Mapper.toDto(orderService.get(outcome.order().getId())), tickets);
     }
 
     // ==================== SLANJE I ZATVARANJE ====================
 
     /**
-     * Gumb "Naruči" iz Redux košarice: otvori/preuzmi narudžbu za stol,
-     * upiši sve stavke i pošalji ih na print — jedan poziv, jedna transakcija.
+     * Gumb "Naruči" / "Dodaj još": otvori/preuzmi narudžbu za stol, upiši sve stavke
+     * i isprintaj SAMO kuhinjski tiket. Šank dobiva račun tek kod zatvaranja (POST /{id}/bill).
      */
     @PostMapping("/submit")
     public SendResult submit(@Valid @RequestBody SubmitOrderRequest request) {
@@ -187,7 +195,7 @@ public class OrderController {
                 orderService.submit(request.orderId(), request.table(), request.userId(),
                         request.note(), request.items());
         List<Ticket> tickets = ticketService.forSentItems(outcome.order().getId(), outcome.sent());
-        return new SendResult(Mapper.toDto(outcome.order()), tickets);
+        return printed(Mapper.toDto(outcome.order()), tickets);
     }
 
     /** Slanje stavki koje su već upisane na narudžbu. */
@@ -195,7 +203,7 @@ public class OrderController {
     public SendResult send(@PathVariable Long id) {
         List<OrderItem> sent = orderService.sendNewItems(id);
         List<Ticket> tickets = ticketService.forSentItems(id, sent);
-        return new SendResult(Mapper.toDto(orderService.get(id)), tickets);
+        return printed(Mapper.toDto(orderService.get(id)), tickets);
     }
 
     @PostMapping("/{id}/close")
@@ -214,7 +222,7 @@ public class OrderController {
         List<Ticket> tickets = OrderType.isTakeawayTable(fromTable)
                 ? ticketService.forTakeawayToTable(id)
                 : List.of();
-        return new SendResult(Mapper.toDto(orderService.get(id)), tickets);
+        return printed(Mapper.toDto(orderService.get(id)), tickets);
     }
 
     // SA STOLA ZA PONIJETI
@@ -222,7 +230,7 @@ public class OrderController {
     public SendResult moveToTakeaway(@PathVariable Long id, @RequestBody(required = false) TakeawayRequest request){
         String fromTable = orderService.moveToTakeaway(id, request != null ? request.note() : null);
         List<Ticket> tickets= ticketService.forTakeawayMove(id, fromTable);
-        return new SendResult(Mapper.toDto(orderService.get(id)), tickets);
+        return printed(Mapper.toDto(orderService.get(id)), tickets);
     }
 
     /** Otkaži cijelu OTVORENU narudžbu (= storno ALL). Za zatvorenu koristi PATCH /{id}/storno. */
@@ -249,10 +257,13 @@ public class OrderController {
         return ticketService.bill(id);
     }
 
-    /** Gumb "Račun": zatvori narudžbu i vrati račun za print (za zatvorenu samo ponovni print). */
+    /**
+     * Gumb "Račun": zatvori narudžbu i odmah isprintaj račun na šanku
+     * (za zatvorenu narudžbu samo ponovni print).
+     */
     @PostMapping("/{id}/bill")
-    public Ticket billAndClose(@PathVariable Long id) {
+    public SendResult billAndClose(@PathVariable Long id) {
         orderService.closeForBill(id);
-        return ticketService.bill(id);
+        return printed(Mapper.toDto(orderService.get(id)), List.of(ticketService.bill(id)));
     }
 }

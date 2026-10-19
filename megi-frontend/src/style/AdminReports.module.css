@@ -1,0 +1,380 @@
+.page {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--name, #e8edf3);
+}
+
+.side {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+/* ---- kalendar ---- */
+
+.calendar {
+  padding: 12px;
+  border: 1px solid var(--card-border, #2e3742);
+  border-radius: 12px;
+  background: var(--card-bg, #1d232b);
+}
+
+.calHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.calTitle {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.calNav {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: var(--portion-bg, #29313b);
+  color: var(--name, #e8edf3);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.calNav:hover:not(:disabled) {
+  background: var(--portion-hover, #323c48);
+}
+
+.calNav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.calWeekday {
+  padding: 4px 0;
+  color: var(--muted, #75818f);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.calDay {
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--portion-text, #cfd7e0);
+  font: inherit;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.calDay:hover:not(:disabled) {
+  background: var(--portion-hover, #323c48);
+}
+
+.calDay:disabled {
+  color: #3d4652;
+  cursor: default;
+}
+
+.calToday {
+  border-color: var(--accent, #2f6db0);
+}
+
+.calSelected,
+.calSelected:hover:not(:disabled) {
+  background: var(--accent, #2f6db0);
+  color: #fff;
+  font-weight: 700;
+}
+
+.quick {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 6px;
+}
+
+.quickBtn {
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--control-border, #333d4a);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--portion-text, #cfd7e0);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.quickBtn:hover:not(:disabled) {
+  background: var(--portion-hover, #323c48);
+}
+
+.quickBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---- izvještaj ---- */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dateTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  text-transform: capitalize;
+}
+
+.liveHint {
+  color: var(--muted, #75818f);
+  font-size: 0.78rem;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: #151a20;
+  border: 1px solid var(--card-border, #2e3742);
+}
+
+.tab {
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--desc, #93a0ae);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: #fff;
+}
+
+.tabActive,
+.tabActive:hover {
+  background: var(--accent, #2f6db0);
+  color: #fff;
+}
+
+.printBtn {
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--accent, #2f6db0);
+  border-radius: 8px;
+  background: transparent;
+  color: #cfe0f5;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.printBtn:hover:not(:disabled) {
+  background: rgba(47, 109, 176, 0.18);
+}
+
+.printBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--card-border, #2e3742);
+  border-radius: 10px;
+  background: var(--card-bg, #1d232b);
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  color: var(--desc, #93a0ae);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.statSub {
+  color: var(--muted, #75818f);
+  font-size: 0.75rem;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.block {
+  padding: 12px 14px;
+  border: 1px solid var(--card-border, #2e3742);
+  border-radius: 10px;
+  background: var(--card-bg, #1d232b);
+}
+
+.blockTitle {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted, #75818f);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.table th {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--card-border, #2e3742);
+  color: var(--desc, #93a0ae);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid #252c35;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.num {
+  text-align: right !important;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.tableDanger td {
+  color: #ff9b9b;
+}
+
+.status {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.statusDONE {
+  background: rgba(43, 138, 62, 0.25);
+  color: #8ce99a;
+}
+
+.statusNEW {
+  background: rgba(240, 140, 0, 0.2);
+  color: #ffc078;
+}
+
+.statusCANCELED {
+  background: rgba(201, 42, 42, 0.2);
+  color: #ff9b9b;
+}
+
+.warning {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(240, 140, 0, 0.15);
+  color: #ffc078;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.muted {
+  margin: 0;
+  color: var(--muted, #75818f);
+  font-size: 0.85rem;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 107, 107, 0.12);
+  color: #ff8a8a;
+}
+
+@media (max-width: 1000px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+  .side {
+    position: static;
+  }
+}
+
+.notice {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(59, 139, 219, 0.14);
+  color: #a5d0ff;
+  font-size: 0.85rem;
+  font-weight: 600;
+}

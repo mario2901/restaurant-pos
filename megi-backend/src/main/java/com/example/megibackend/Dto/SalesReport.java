@@ -29,5 +29,7 @@ public record SalesReport(LocalDateTime from,
                           List<WaiterRow> byWaiter,
                           long stornoQuantity,
                           BigDecimal stornoTotal,
-                          List<SalesRow> stornoItems) {
+                          List<SalesRow> stornoItems,
+                          // false = obračun pića isključen: piće nije u prometu, artiklima ni stornu
+                          boolean drinksIncluded) {
 }

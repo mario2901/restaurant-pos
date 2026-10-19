@@ -29,6 +29,11 @@ import java.util.*;
  * Storno se prikazuje odvojeno (stornoQuantity / stornoTotal / stornoItems):
  * stornirani komadi sa zatvorenih (DONE) i otkazanih (CANCELED) narudžbi u razdoblju.
  *
+ * Obračun pića (Admin -> Postavke, SettingsService.drinksTracked):
+ * kad je isključen, stavke pića se preskaču posvuda (promet, po konobaru,
+ * artikli, storno), a narudžbe koje imaju SAMO piće ne broje se kao narudžbe.
+ * Vrijedi i unatrag — izvještaj se uvijek računa po trenutnoj postavci.
+ *
  * Agregacija se radi u Javi nad fetch-join upitom umjesto GROUP BY u SQL-u:
  * za promet jednog restorana to je nekoliko stotina redova dnevno, a kod je
  * čitljiv i lako proširiv. Ako baza jednom naraste, ovo je mjesto za optimizaciju.
@@ -39,6 +44,7 @@ import java.util.*;
 public class ReportService {
 
     private final OrderRepository orderRepository;
+    private final SettingsService settingsService;
 
     // ==================== UKUPNI IZVJEŠTAJ ====================
 
@@ -58,17 +64,18 @@ public class ReportService {
     public SalesReport forRange(LocalDateTime from, LocalDateTime to) {
         validateRange(from, to);
 
-        List<Order> closed = orderRepository.findClosedWithItemsIn(CLOSED_STATUSES, from, to);
+        boolean drinks = settingsService.drinksTracked();
+        List<Order> closed = relevant(orderRepository.findClosedWithItemsIn(CLOSED_STATUSES, from, to), drinks);
         List<Order> orders = done(closed);
-        Totals totals = aggregate(orders);
-        StornoTotals storno = aggregateStorno(closed);
+        Totals totals = aggregate(orders, drinks);
+        StornoTotals storno = aggregateStorno(closed, drinks);
 
         long deliveryCount = 0;
         BigDecimal deliveryTotal = BigDecimal.ZERO;
         Map<Long, WaiterAccumulator> byWaiter = new HashMap<>();
 
         for (Order order : orders) {
-            BigDecimal orderTotal = orderTotal(order);
+            BigDecimal orderTotal = orderTotal(order, drinks);
 
             if (order.isDelivery()) {
                 deliveryCount++;
@@ -103,7 +110,8 @@ public class ReportService {
                 waiterRows,
                 storno.quantity,
                 money(storno.total),
-                storno.items()
+                storno.items(),
+                drinks
         );
     }
 
@@ -126,22 +134,23 @@ public class ReportService {
     public DeliveryReport deliveryForRange(LocalDateTime from, LocalDateTime to) {
         validateRange(from, to);
 
-        List<Order> closedAll = orderRepository.findClosedWithItemsInByType(
-                CLOSED_STATUSES, OrderType.DELIVERY, from, to);
+        boolean drinks = settingsService.drinksTracked();
+        List<Order> closedAll = relevant(orderRepository.findClosedWithItemsInByType(
+                CLOSED_STATUSES, OrderType.DELIVERY, from, to), drinks);
         List<Order> closed = done(closedAll);
-        List<Order> open = orderRepository.findByStatusAndTypeCreatedBetweenWithItems(
-                OrderStatus.NEW, OrderType.DELIVERY, from, to);
+        List<Order> open = relevant(orderRepository.findByStatusAndTypeCreatedBetweenWithItems(
+                OrderStatus.NEW, OrderType.DELIVERY, from, to), drinks);
 
-        Totals totals = aggregate(closed);
-        StornoTotals storno = aggregateStorno(closedAll);
+        Totals totals = aggregate(closed, drinks);
+        StornoTotals storno = aggregateStorno(closedAll, drinks);
 
         BigDecimal openTotal = open.stream()
-                .map(this::orderTotal)
+                .map(o -> orderTotal(o, drinks))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         List<DeliveryOrderRow> rows = new ArrayList<>();
-        for (Order order : closedAll) rows.add(toRow(order)); // i otkazane (storno) — vidi se status
-        for (Order order : open) rows.add(toRow(order));
+        for (Order order : closedAll) rows.add(toRow(order, drinks)); // i otkazane (storno) — vidi se status
+        for (Order order : open) rows.add(toRow(order, drinks));
         rows.sort(Comparator.comparing(DeliveryOrderRow::createdAt,
                 Comparator.nullsLast(Comparator.naturalOrder())));
 
@@ -159,7 +168,8 @@ public class ReportService {
                 rows,
                 storno.quantity,
                 money(storno.total),
-                storno.items()
+                storno.items(),
+                drinks
         );
     }
 
@@ -170,11 +180,12 @@ public class ReportService {
 
     // ==================== AGREGACIJA ====================
 
-    private Totals aggregate(List<Order> orders) {
+    private Totals aggregate(List<Order> orders, boolean drinks) {
         Totals totals = new Totals();
 
         for (Order order : orders) {
             for (OrderItem item : order.getItems()) {
+                if (!counts(item, drinks)) continue;
                 if (item.getStatus() == ItemStatus.CANCELLED) continue;
                 if (item.getPriceAtOrder() == null) continue;
                 if (item.getActiveQuantity() == 0) continue;
@@ -198,10 +209,11 @@ public class ReportService {
     }
 
     /** Stornirani komadi (i djelomični storno) — ne ulaze u promet, prikazuju se odvojeno. */
-    private StornoTotals aggregateStorno(List<Order> orders) {
+    private StornoTotals aggregateStorno(List<Order> orders, boolean drinks) {
         StornoTotals storno = new StornoTotals();
         for (Order order : orders) {
             for (OrderItem item : order.getItems()) {
+                if (!counts(item, drinks)) continue;
                 if (item.getStornoQuantity() <= 0 || item.getPriceAtOrder() == null) continue;
                 BigDecimal value = item.getStornoTotal();
                 storno.quantity += item.getStornoQuantity();
@@ -215,20 +227,34 @@ public class ReportService {
 
     private static final Set<OrderStatus> CLOSED_STATUSES = EnumSet.of(OrderStatus.DONE, OrderStatus.CANCELED);
 
+    /** Ulazi li stavka u izvještaj: piće samo kad je obračun pića uključen. */
+    private static boolean counts(OrderItem item, boolean drinks) {
+        return drinks || !(item instanceof DrinkOrderItem);
+    }
+
+    /** Bez obračuna pića narudžba samo s pićem ne postoji za izvještaj (ni u broju narudžbi). */
+    private List<Order> relevant(List<Order> orders, boolean drinks) {
+        if (drinks) return orders;
+        return orders.stream()
+                .filter(o -> o.getItems().stream().anyMatch(i -> counts(i, false)))
+                .toList();
+    }
+
     private List<Order> done(List<Order> orders) {
         return orders.stream().filter(o -> o.getStatus() == OrderStatus.DONE).toList();
     }
 
     /** Isto pravilo kao aggregate: bez storniranih i stavki bez cijene. */
-    private BigDecimal orderTotal(Order order) {
+    private BigDecimal orderTotal(Order order, boolean drinks) {
         return order.getItems().stream()
+                .filter(i -> counts(i, drinks))
                 .filter(i -> i.getStatus() != ItemStatus.CANCELLED)
                 .filter(i -> i.getPriceAtOrder() != null)
                 .map(OrderItem::getLineTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private DeliveryOrderRow toRow(Order order) {
+    private DeliveryOrderRow toRow(Order order, boolean drinks) {
         User waiter = order.getUser();
         return new DeliveryOrderRow(
                 order.getId(),
@@ -236,7 +262,7 @@ public class ReportService {
                 order.getCreatedAt(),
                 order.getClosedAt(),
                 waiter != null ? waiter.getName() : null,
-                money(orderTotal(order))
+                money(orderTotal(order, drinks))
         );
     }
 

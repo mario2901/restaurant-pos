@@ -24,7 +24,12 @@ export default function useStorno() {
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
-      showTickets(result?.tickets);
+      // storno pića vraća zalihu -> osvježi stanje
+      queryClient.invalidateQueries({
+        queryKey: ["menu", "drink"],
+        refetchType: "all",
+      });
+      showTickets(result);
     },
   });
 }

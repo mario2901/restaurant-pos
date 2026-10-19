@@ -16,8 +16,9 @@ export const OrderContext = createContext({
   confirmTableChange: () => {},
   cancelTableChange: () => {},
   retargetTable: () => {},
-  // tiketi za pregled/print (Naruči, Račun, Storno) — modal je u App.jsx
+  // tiketi za pregled/print (Naruči, Račun, Storno) — modal je u RootLayout.jsx
   tickets: null,
+  printError: null,
   showTickets: () => {},
   closeTickets: () => {},
 });
@@ -171,11 +172,32 @@ export default function OrderContextProvider({ children }) {
   // { next } dok čeka potvrdu odbacivanja; next može biti null ("← Stolovi")
   const [pendingTable, setPendingTable] = useState(null);
   const [tickets, setTickets] = useState(null);
+  const [printError, setPrintError] = useState(null);
 
-  const showTickets = useCallback((list) => {
-    if (Array.isArray(list) && list.length > 0) setTickets(list);
+  /**
+   * Prima odgovor backenda (SendResult: { order, tickets, printed, printError })
+   * ili samo listu tiketa.
+   *  - printed=true  -> backend je već isprintao, ne otvaramo ništa
+   *  - printError    -> printer nije ispisao: backend je tiket stavio na listu
+   *                     neisprintanih -> PrintAlerts (ponovi ispis); pregled se ne otvara
+   *  - inače         -> print isključen na backendu: pregled + print kroz browser
+   */
+  const showTickets = useCallback((input) => {
+    const result = Array.isArray(input) ? { tickets: input } : input;
+    const list = result?.tickets;
+    if (!Array.isArray(list) || list.length === 0) return;
+    if (result.printed) return;
+    if (result.printError) {
+      window.dispatchEvent(new Event("megi:print-failed"));
+      return;
+    }
+    setPrintError(null);
+    setTickets(list);
   }, []);
-  const closeTickets = useCallback(() => setTickets(null), []);
+  const closeTickets = useCallback(() => {
+    setTickets(null);
+    setPrintError(null);
+  }, []);
 
   /**
    * Svaka promjena stola (drugi stol, DOSTAVA/PONIJETI, "Dodaj još" na drugu
@@ -269,6 +291,7 @@ export default function OrderContextProvider({ children }) {
     cancelTableChange,
     retargetTable,
     tickets,
+    printError,
     showTickets,
     closeTickets,
   };

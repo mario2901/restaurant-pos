@@ -66,9 +66,9 @@ export default function Tables({ reon, onReonChange, onSelectTable }) {
   function handleBill(order) {
     // nakon uspjeha React Query osvježi stolove → sto nema narudžbu → modal se sam zatvori
     billOrder.mutate(order.id, {
-      onSuccess: (ticket) => {
+      onSuccess: (result) => {
         setSelected(null);
-        if (ticket) showTickets([ticket]);
+        showTickets(result);
       },
     });
   }

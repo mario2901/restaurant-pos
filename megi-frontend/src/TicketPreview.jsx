@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import styles from "./style/TicketPreview.module.css";
+import { printTickets } from "./data/api.js";
 
 /*
  * Pregled tiketa koje vraća backend (Dto/Ticket.java):
@@ -18,10 +19,20 @@ const TYPE_LABEL = {
   BILL: "RAČUN",
   STORNO_KITCHEN: "STORNO KUHINJA",
   STORNO_BAR: "STORNO ŠANK",
+  REPORT: "IZVJEŠTAJ",
 };
 
 // Tiketi bez cijena (kuhar ih ne treba)
 const KITCHEN_TYPES = ["KITCHEN", "STORNO_KITCHEN"];
+const STORNO_TYPES = ["STORNO_KITCHEN", "STORNO_BAR"];
+
+// Zaglavlje restorana na tiketima šanka — isto kao app.printer.header u backendu
+const RESTAURANT_HEADER = [
+  'PIZZERIA "MEGI DEA"',
+  "Vl. Dragica Brtan",
+  "H.V. Hrvatinica bb",
+  "70101 Jajce",
+];
 
 const TICKET_CSS = `
 .tkt {
@@ -51,6 +62,14 @@ const TICKET_CSS = `
   color: #fff;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
+}
+.tkt-header {
+  margin: 0 0 2mm;
+  padding-bottom: 2mm;
+  border-bottom: 1px dashed #000;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.35;
 }
 .tkt-meta {
   display: flex;
@@ -116,6 +135,15 @@ const TICKET_CSS = `
   font-size: 17px;
   font-weight: 700;
 }
+.tkt-highlight {
+  margin: 1mm 0 2mm;
+  padding: 1.5mm 0;
+  border-top: 3px double #000;
+  border-bottom: 3px double #000;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+}
 .tkt-footer {
   margin-top: 3mm;
   text-align: center;
@@ -150,13 +178,35 @@ const tableLabel = (table) => {
 
 function TicketPaper({ ticket }) {
   const isKitchen = KITCHEN_TYPES.includes(ticket.type);
+  const isStorno = STORNO_TYPES.includes(ticket.type);
   const showPrices = !isKitchen;
+  // storno: "-2x", dodatak ("Dodaj još"): "+2x"
+  const sign = isStorno ? "-" : ticket.addition ? "+" : "";
 
   return (
     <div className={`tkt ${isKitchen ? "tkt-kitchen" : ""}`}>
-      <p className="tkt-title">{TYPE_LABEL[ticket.type] ?? ticket.type}</p>
+      {!isKitchen && (
+        <div className="tkt-header">
+          {RESTAURANT_HEADER.map((line) => (
+            <div key={line}>{line}</div>
+          ))}
+        </div>
+      )}
+      <p className="tkt-title">
+        {ticket.addition
+          ? "DODATAK KUHINJA"
+          : (TYPE_LABEL[ticket.type] ?? ticket.type)}
+      </p>
 
       {ticket.notice && <p className="tkt-notice">{ticket.notice}</p>}
+
+      {(isStorno || ticket.addition) && (
+        <div className="tkt-highlight">
+          {tableLabel(ticket.table)}
+          <br />
+          NARUDŽBA #{ticket.orderId}
+        </div>
+      )}
 
       <div className="tkt-meta">
         <span className="tkt-table">{tableLabel(ticket.table)}</span>
@@ -164,7 +214,8 @@ function TicketPaper({ ticket }) {
       </div>
       <div className="tkt-meta">
         <span>{formatDateTime(ticket.printedAt)}</span>
-        {ticket.waiter && <span>{ticket.waiter}</span>}
+        {/* konobar samo na kuhinjskom tiketu, ne na šanku / računu */}
+        {isKitchen && ticket.waiter && <span>{ticket.waiter}</span>}
       </div>
 
       {ticket.orderNote && <p className="tkt-order-note">{ticket.orderNote}</p>}
@@ -175,7 +226,10 @@ function TicketPaper({ ticket }) {
         {(ticket.lines ?? []).map((line, i) => (
           <li key={i} className="tkt-line">
             <div className="tkt-row">
-              <span className="tkt-qty">{line.quantity}x</span>
+              <span className="tkt-qty">
+                {sign}
+                {line.quantity}x
+              </span>
               <span className="tkt-name">{line.name}</span>
               {showPrices && line.lineTotal != null && (
                 <span className="tkt-price">{formatPrice(line.lineTotal)}</span>
@@ -245,8 +299,11 @@ ${TICKET_CSS}
   }, 50);
 }
 
-export default function TicketPreview({ tickets = [], onDone }) {
+export default function TicketPreview({ tickets = [], initialError = null, onDone }) {
   const [active, setActive] = useState(0);
+  const [busy, setBusy] = useState(false);
+  // initialError = automatski print iz backenda nije uspio (narudžba je spremljena)
+  const [error, setError] = useState(initialError);
   const pageRefs = useRef([]);
 
   if (tickets.length === 0) {
@@ -259,18 +316,40 @@ export default function TicketPreview({ tickets = [], onDone }) {
     return `<div class="tkt-page">${html}</div>`;
   }
 
+  // Prvo mrežni printer preko backenda; ako je print na backendu isključen
+  // (app.printer.enabled=false), printa se kroz browser kao prije.
+  async function sendToPrinter(list, fallbackHtml) {
+    setError(null);
+    setBusy(true);
+    try {
+      const res = await printTickets(list);
+      if (res?.printed) {
+        onDone?.();
+      } else {
+        printHtml(fallbackHtml());
+      }
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function handlePrintCurrent() {
-    const el = pageRefs.current[current];
-    if (el) printHtml(wrap(el.innerHTML));
+    sendToPrinter([tickets[current]], () => {
+      const el = pageRefs.current[current];
+      return el ? wrap(el.innerHTML) : "";
+    });
   }
 
   function handlePrintAll() {
-    const html = pageRefs.current
-      .slice(0, tickets.length)
-      .filter(Boolean)
-      .map((el) => wrap(el.innerHTML))
-      .join("");
-    printHtml(html);
+    sendToPrinter(tickets, () =>
+      pageRefs.current
+        .slice(0, tickets.length)
+        .filter(Boolean)
+        .map((el) => wrap(el.innerHTML))
+        .join(""),
+    );
   }
 
   return (
@@ -306,6 +385,8 @@ export default function TicketPreview({ tickets = [], onDone }) {
         ))}
       </div>
 
+      {error && <p className={styles.error}>{error}</p>}
+
       <div className={styles.actions}>
         {tickets.length > 1 ? (
           <>
@@ -313,6 +394,7 @@ export default function TicketPreview({ tickets = [], onDone }) {
               type="button"
               className={styles.secondary}
               onClick={handlePrintCurrent}
+              disabled={busy}
             >
               Printaj {TYPE_LABEL[tickets[current].type]?.toLowerCase()}
             </button>
@@ -320,8 +402,9 @@ export default function TicketPreview({ tickets = [], onDone }) {
               type="button"
               className={styles.primary}
               onClick={handlePrintAll}
+              disabled={busy}
             >
-              Printaj sve
+              {busy ? "Šaljem..." : "Printaj sve"}
             </button>
           </>
         ) : (
@@ -337,6 +420,7 @@ export default function TicketPreview({ tickets = [], onDone }) {
               type="button"
               className={styles.primary}
               onClick={handlePrintCurrent}
+              disabled={busy}
             >
               Printaj
             </button>

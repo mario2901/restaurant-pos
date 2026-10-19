@@ -27,7 +27,6 @@ export default function Order({
     finishOrder,
   } = useContext(OrderContext);
   const { data: user } = useMe();
-  console.log(user);
   const { mutate, isPending, isError, error, reset } = useSubmitOrder();
   const isEmpty = items.length === 0;
   const tableLabel = table?.label;
@@ -49,7 +48,7 @@ export default function Order({
       }),
       {
         onSuccess: (result) => {
-          // result = { order: OrderResponse, tickets: [Ticket] }
+          // result = { order, tickets, printed, printError } — backend je već poslao na printere
           // Prvo tiketi (RightSideBar otvara pregled), pa povratak na stolove.
           onSent?.(result);
           finishOrder();

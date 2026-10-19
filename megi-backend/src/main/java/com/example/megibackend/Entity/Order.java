@@ -12,7 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "orders")
+// Indeksi: izvještaji i lista narudžbi filtriraju po datumu — bez njih bi svaki
+// izvještaj s vremenom prolazio kroz cijelu tablicu (ddl-auto=update ih sam kreira)
+@Table(name = "orders", indexes = {
+        @Index(name = "idx_orders_created_at", columnList = "created_at"),
+        @Index(name = "idx_orders_closed_at", columnList = "closed_at"),
+        @Index(name = "idx_orders_status", columnList = "status")
+})
 @Getter
 @Setter
 @NoArgsConstructor

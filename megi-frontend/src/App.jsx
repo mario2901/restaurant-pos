@@ -5,8 +5,9 @@ import Menu from "./Menu.jsx";
 import OrderDetailsModal from "./OrderDetailsModal.jsx";
 import { useContext, useState } from "react";
 import { OrderContext } from "./context/OrderContext.jsx";
-import { useLogout } from "./hooks/useLogin.js";
+
 import { useNavigate } from "react-router";
+import { useMe } from "./hooks/useLogin.js";
 
 const targetName = (table) => {
   if (!table) return "stolove";
@@ -16,10 +17,11 @@ const targetName = (table) => {
 };
 
 export default function App() {
+  const { data: user } = useMe();
   const [reon, setReon] = useState("unutra");
-  const logout = useLogout();
+
   const navigate = useNavigate();
-  // Odabrani stol živi u OrderContext-u (zajedno s košaricom)
+
   const {
     table,
     selectTable,
@@ -28,24 +30,16 @@ export default function App() {
     confirmTableChange,
     cancelTableChange,
   } = useContext(OrderContext);
-  function handleLogout() {
-    logout();
-  }
   function handleProfil() {
-    navigate("/profil");
+    navigate(user?.role === "ADMIN" ? "/admin" : "/profil");
   }
   return (
     <div className={styles.app}>
       <div className={styles.global}>
         {!table && (
-          <>
-            <button className={styles.profil} onClick={handleProfil}>
-              Profil
-            </button>
-            <button className={styles.profil} onClick={handleLogout}>
-              Odjava
-            </button>
-          </>
+          <button className={styles.profil} onClick={handleProfil}>
+            Profil
+          </button>
         )}
 
         <main className={styles.main}>

@@ -38,3 +38,14 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// React build (megi-frontend/dist) -> static/ u JAR-u.
+// Redoslijed: u megi-frontend "npm run build", zatim ovdje "./gradlew bootJar".
+// Ako dist ne postoji (npr. dev), ništa se ne kopira. Ako si dist ručno kopirao
+// u src/main/resources/static, ta kopija ima prednost (EXCLUDE duplikata).
+tasks.named('processResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from('../megi-frontend/dist') {
+        into 'static'
+    }
+}

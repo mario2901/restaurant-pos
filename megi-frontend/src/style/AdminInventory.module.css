@@ -1,0 +1,24 @@
+/* Dodaci na DrinksStocks.module.css za Admin -> Inventura */
+
+/* Admin .content već ima padding */
+.page {
+  padding: 0;
+  max-width: none;
+}
+
+.minus {
+  color: #ff8a8a !important;
+}
+
+.plus {
+  color: #8ce99a !important;
+}
+
+.zero {
+  color: #75818f !important;
+}
+
+.diffHint {
+  color: #8b96a5;
+  font-size: 0.75rem;
+}

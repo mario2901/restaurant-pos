@@ -22,14 +22,6 @@ export default function ProfilSideBar() {
           <TbArrowLeft size={18} />
           Stolovi
         </button>
-        <button
-          type="button"
-          className={`${styles.navBtn} ${styles.logout}`}
-          onClick={logout}
-        >
-          <TbLogout size={18} />
-          Odjava
-        </button>
       </div>
 
       <h2 className={styles.name}>{user.name}</h2>
@@ -37,6 +29,14 @@ export default function ProfilSideBar() {
       <ShiftStats userId={user.id} />
       <ReportsButtons />
       <ChangePin userId={user.id} />
+      <button
+        type="button"
+        className={`${styles.navBtn} ${styles.logout}`}
+        onClick={logout}
+      >
+        <TbLogout size={18} />
+        Odjava
+      </button>
     </aside>
   );
 }

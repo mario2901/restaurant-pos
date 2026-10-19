@@ -1,8 +1,8 @@
 package com.example.megibackend.Service;
+import lombok.RequiredArgsConstructor;
 
 import com.example.megibackend.Entity.OrderType;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,53 +15,49 @@ import java.time.LocalTime;
 /**
  * Automatsko zatvaranje narudžbi (status DONE = ulazi u promet).
  *
- * 1) Dostava u app.auto-close.delivery-time (default 15:30):
- *    zatvaraju se sve otvorene DOSTAVE napravljene prije tog vremena.
- *    Dostave napravljene kasnije ostaju otvorene i zatvara ih konobar.
+ * Vremena se postavljaju u Admin -> Postavke (SettingsService), default iz
+ * application.properties (app.auto-close.delivery-time / all-time).
  *
- * 2) Sve ostalo u app.auto-close.all-time (default 22:40):
- *    stolovi, za ponijeti i eventualne zaostale dostave napravljene prije tog vremena.
- *    Narudžbe napravljene kasnije zatvara konobar.
+ * 1) Dostava: nakon vremena zatvaranja dostave zatvaraju se sve otvorene
+ *    DOSTAVE napravljene prije tog vremena. Kasnije dostave zatvara konobar.
+ *
+ * 2) Sve ostalo: nakon vremena zatvaranja svih — stolovi, za ponijeti i
+ *    zaostale dostave napravljene prije tog vremena. Kasnije zatvara konobar.
  *
  * 3) Sigurnosna mreža u 23:59 (app.auto-close.cron) i pri pokretanju backenda:
  *    ništa ne smije ostati otvoreno iz prethodnih dana.
  *
- * Provjera za 1) i 2) se vrti svake minute i uspoređuje vrijeme KREIRANJA narudžbe
- * s današnjim graničnim vremenom. Zato je idempotentna (narudžba nakon 15:30
- * se nikad ne zatvara automatski) i sama nadoknadi propušteno ako je backend
- * bio ugašen u 15:30 ili 22:40.
+ * 1) i 2) se provjeravaju SVAKE MINUTE prema vremenima iz baze, pa promjena
+ * vremena u Adminu vrijedi odmah, bez restarta. Provjera uspoređuje vrijeme
+ * KREIRANJA narudžbe s današnjim graničnim vremenom, zato je idempotentna
+ * (narudžba nakon granice se nikad ne zatvara automatski) i sama nadoknadi
+ * propušteno ako je backend bio ugašen u trenutku zatvaranja.
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AutoCloseService {
 
     private final OrderService orderService;
     private final BusinessDayService businessDay;
-    private final LocalTime deliveryCloseTime;
-    private final LocalTime allCloseTime;
+    private final SettingsService settingsService;
 
-    public AutoCloseService(OrderService orderService,
-                            BusinessDayService businessDay,
-                            @Value("${app.auto-close.delivery-time:15:30}") LocalTime deliveryCloseTime,
-                            @Value("${app.auto-close.all-time:22:40}") LocalTime allCloseTime) {
-        this.orderService = orderService;
-        this.businessDay = businessDay;
-        this.deliveryCloseTime = deliveryCloseTime;
-        this.allCloseTime = allCloseTime;
-    }
+    @Scheduled(cron = "0 * * * * *")
+    public void tick() {
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
 
-    @Scheduled(cron = "${app.auto-close.delivery-cron:0 30 15 * * *}")
-    public void closeDelivery() {
-        LocalDateTime cutoff = LocalDateTime.now().toLocalDate().atTime(deliveryCloseTime);
-        int closed = orderService.autoCloseOpenBefore(cutoff, OrderType.DELIVERY);
-        log.info("Automatsko zatvaranje dostave: zatvoreno {} narudžbi.", closed);
-    }
+        LocalTime deliveryTime = settingsService.deliveryCloseTime();
+        if (!now.isBefore(deliveryTime)) {
+            int closed = orderService.autoCloseOpenBefore(today.atTime(deliveryTime), OrderType.DELIVERY);
+            if (closed > 0) log.info("Automatsko zatvaranje dostave ({}): zatvoreno {} narudžbi.", deliveryTime, closed);
+        }
 
-    @Scheduled(cron = "${app.auto-close.all-cron:0 40 22 * * *}")
-    public void closeAll() {
-        LocalDateTime cutoff = LocalDateTime.now().toLocalDate().atTime(allCloseTime);
-        int closed = orderService.autoCloseOpenBefore(cutoff);
-        log.info("Automatsko zatvaranje svih narudžbi: zatvoreno {} narudžbi.", closed);
+        LocalTime allTime = settingsService.allCloseTime();
+        if (!now.isBefore(allTime)) {
+            int closed = orderService.autoCloseOpenBefore(today.atTime(allTime));
+            if (closed > 0) log.info("Automatsko zatvaranje svih narudžbi ({}): zatvoreno {} narudžbi.", allTime, closed);
+        }
     }
 
     @Scheduled(cron = "${app.auto-close.cron:0 59 23 * * *}")
@@ -75,9 +71,6 @@ public class AutoCloseService {
     public void closeLeftoversOnStartup() {
         int closed = orderService.autoCloseOpenBefore(businessDay.currentStart());
         if (closed > 0) log.info("Pri pokretanju zatvoreno {} narudžbi iz prethodnih dana.", closed);
-
-        LocalTime now = LocalTime.now();
-        if (!now.isBefore(deliveryCloseTime)) closeDelivery();
-        if (!now.isBefore(allCloseTime)) closeAll();
+        tick();
     }
 }

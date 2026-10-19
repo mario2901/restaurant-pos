@@ -14,7 +14,7 @@ export default function useChangeTable() {
     onSuccess: (result, { orderId, table }) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       retargetTable(orderId, table);
-      showTickets(result?.tickets);
+      showTickets(result);
     },
   });
 }

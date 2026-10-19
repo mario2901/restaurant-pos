@@ -57,3 +57,8 @@
   border-color: #3d6a9e;
   color: #ffffff;
 }
+
+/* prazna treća kolona grida — drži naslov stola u sredini */
+.headerSpacer {
+  display: block;
+}

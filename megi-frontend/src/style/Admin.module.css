@@ -1,0 +1,90 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: #15191f;
+}
+.sidebar {
+  width: 20%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #1d232b;
+  color: #e5e7eb;
+  gap: 10px;
+  padding: 10 10px;
+  position: sticky;
+}
+.brand {
+  text-align: center;
+  font-size: 25px;
+  font-weight: 600;
+  color: #fff;
+}
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.link {
+  display: block;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #d1d5db;
+  text-decoration: none;
+  background-color: #29313b;
+  border: none;
+}
+
+.link:hover {
+  background: #374151;
+  color: #fff;
+}
+
+.active {
+  background: #2563eb;
+  color: #fff;
+}
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+}
+
+/* ---- gornji gumbi: isti stil kao u Profilu (ProfilSideBar .navBtn) ---- */
+
+.topBar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 12px 0;
+}
+
+.navBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  border: 1px solid #2e3742;
+  border-radius: 8px;
+  background: #232a33;
+  color: #e8edf3;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.navBtn:hover {
+  border-color: #e8590c;
+}
+
+.logout {
+  color: #ff6b6b;
+}
+
+.logout:hover {
+  border-color: #ff6b6b;
+}

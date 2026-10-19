@@ -1,4 +1,14 @@
+import { useMemo, useState } from "react";
 import styles from "./style/OrdersList.module.css";
+import { TbTruckDelivery, TbPaperBag, TbArmchair } from "react-icons/tb";
+
+// Vrsta narudžbe po oznaci stola — boja ruba, pozadina i oznaka kartice
+const KIND = {
+  DOSTAVA: { cls: "kindDelivery", label: "Dostava", Icon: TbTruckDelivery },
+  PONIJETI: { cls: "kindTakeaway", label: "Za ponijeti", Icon: TbPaperBag },
+};
+const TABLE_KIND = { cls: "kindTable", label: "Stol", Icon: TbArmchair };
+const kindOf = (table) => KIND[table] ?? TABLE_KIND;
 
 const formatPrice = (price) =>
   `${Number(price).toFixed(2).replace(".", ",")} KM`;
@@ -23,6 +33,9 @@ const visibleTotal = (items) =>
  * Klikabilna lista narudžbi (najnovija prva).
  * Roditelj šalje već filtrirane narudžbe; klik na karticu -> onSelect(order).
  * timeKey: koje vrijeme se prikazuje i po kojem se sortira ("createdAt" | "closedAt").
+ * pageSize: ako je zadan, renderira se samo toliko najnovijih narudžbi, a gumb
+ *           "Prikaži još" dodaje sljedećih pageSize (sve je već dohvaćeno —
+ *           štedi se samo render). Reset: roditelj promijeni `key`.
  */
 export default function OrdersList({
   orders,
@@ -31,11 +44,20 @@ export default function OrdersList({
   error = null,
   emptyText = "Nema narudžbi.",
   timeKey = "createdAt",
+  pageSize = null,
 }) {
+  const [limit, setLimit] = useState(pageSize);
+
+  const sorted = useMemo(() => {
+    const timeOf = (order) => order[timeKey] ?? order.createdAt;
+    return [...orders].sort(
+      (a, b) => new Date(timeOf(b)) - new Date(timeOf(a)),
+    );
+  }, [orders, timeKey]);
+
+  const shown = limit ? sorted.slice(0, limit) : sorted;
+  const remaining = sorted.length - shown.length;
   const timeOf = (order) => order[timeKey] ?? order.createdAt;
-  const sorted = [...orders].sort(
-    (a, b) => new Date(timeOf(b)) - new Date(timeOf(a)),
-  );
 
   return (
     <div className={styles.root}>
@@ -46,17 +68,26 @@ export default function OrdersList({
       )}
 
       <ul className={styles.orderList}>
-        {sorted.map((order) => (
+        {shown.map((order) => {
+          const kind = kindOf(order.table);
+          const { Icon } = kind;
+          return (
           <li
             key={order.id}
-            className={styles.card}
+            className={`${styles.card} ${styles[kind.cls]}`}
             role="button"
             tabIndex={0}
             onClick={() => onSelect(order)}
             onKeyDown={(e) => e.key === "Enter" && onSelect(order)}
           >
             <div className={styles.cardHeader}>
-              <span className={styles.table}>{order.table}</span>
+              <span className={styles.table}>
+                <span className={styles.kindBadge}>
+                  <Icon size={14} />
+                  {kind.label}
+                </span>
+                {kind === TABLE_KIND && order.table}
+              </span>
               <span className={styles.meta}>#{order.id}</span>
               <span className={styles.time}>{formatTime(timeOf(order))}</span>
             </div>
@@ -106,8 +137,22 @@ export default function OrdersList({
               </span>
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
+
+      {remaining > 0 && (
+        <button
+          type="button"
+          className={styles.moreBtn}
+          onClick={() => setLimit((l) => l + pageSize)}
+        >
+          Prikaži još {Math.min(pageSize, remaining)}
+          <span className={styles.moreCount}>
+            ({shown.length} od {sorted.length})
+          </span>
+        </button>
+      )}
     </div>
   );
 }

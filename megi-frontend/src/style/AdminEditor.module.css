@@ -1,0 +1,374 @@
+/* Admin: stranica s gridom lijevo i bočnim panelom za uređivanje desno */
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 20px;
+  align-items: start;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--name, #e8edf3);
+}
+
+.main {
+  min-width: 0;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.toolbarActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---- bočni panel ---- */
+
+.panel {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid var(--card-border, #2e3742);
+  border-radius: 12px;
+  background: var(--card-bg, #1d232b);
+  box-sizing: border-box;
+}
+
+.placeholder {
+  margin: 24px 0;
+  color: var(--muted, #75818f);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+.closeBtn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--desc, #93a0ae);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.closeBtn:hover {
+  background: var(--portion-hover, #323c48);
+  color: #fff;
+}
+
+/* ---- sekcije i polja ---- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--card-border, #2e3742);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted, #75818f);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--desc, #93a0ae);
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--control-border, #333d4a);
+  border-radius: 8px;
+  background: var(--control-bg, #232a33);
+  color: var(--control-text, #e8edf3);
+  font: inherit;
+  font-size: 0.88rem;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent, #2f6db0);
+}
+
+.textarea {
+  height: auto;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.priceInput {
+  flex: 0 0 82px;
+  width: 82px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.readonly {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  color: var(--desc, #93a0ae);
+  font-size: 0.88rem;
+}
+
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rowItem {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rowHint {
+  color: var(--muted, #75818f);
+  font-size: 0.72rem;
+}
+
+.addBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px dashed var(--control-border, #333d4a);
+  border-radius: 8px;
+}
+
+.muted {
+  margin: 0;
+  color: var(--muted, #75818f);
+  font-size: 0.85rem;
+}
+
+.error {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 107, 107, 0.12);
+  color: #ff8a8a;
+  font-size: 0.82rem;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--card-border, #2e3742);
+}
+
+/* ---- gumbi ---- */
+
+.primary,
+.secondary,
+.ghost,
+.danger,
+.dangerGhost {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.primary {
+  border: none;
+  background: var(--accent, #2f6db0);
+  color: #fff;
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--accent-hover, #3a80cb);
+}
+
+.secondary {
+  border: 1px solid var(--accent, #2f6db0);
+  background: transparent;
+  color: #cfe0f5;
+}
+
+.secondary:hover:not(:disabled) {
+  background: rgba(47, 109, 176, 0.18);
+}
+
+.ghost {
+  border: 1px solid var(--control-border, #333d4a);
+  background: transparent;
+  color: var(--desc, #93a0ae);
+}
+
+.ghost:hover:not(:disabled) {
+  color: #fff;
+  background: var(--portion-hover, #323c48);
+}
+
+.danger {
+  border: none;
+  background: #c92a2a;
+  color: #fff;
+}
+
+.dangerGhost {
+  border: 1px solid #6b2b2b;
+  background: transparent;
+  color: #ff8a8a;
+}
+
+.dangerGhost:hover:not(:disabled) {
+  background: rgba(201, 42, 42, 0.15);
+}
+
+.small {
+  height: 36px;
+  padding: 0 10px;
+  font-size: 0.8rem;
+}
+
+.primary:disabled,
+.secondary:disabled,
+.ghost:disabled,
+.danger:disabled,
+.dangerGhost:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.alignStart {
+  align-self: flex-start;
+}
+
+.confirmInline {
+  display: inline-flex;
+  gap: 6px;
+}
+
+/* ---- prekidač dostupnosti ---- */
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #ff9b9b;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toggleOn {
+  color: #8ce99a;
+}
+
+.toggleTrack {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: #4a2b2b;
+  transition: background 0.15s;
+}
+
+.toggleOn .toggleTrack {
+  background: #2b8a3e;
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+
+.toggleOn .toggleThumb {
+  transform: translateX(16px);
+}
+
+.toggle:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (max-width: 1100px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    position: static;
+    max-height: none;
+  }
+}

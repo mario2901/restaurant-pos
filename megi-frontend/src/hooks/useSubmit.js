@@ -8,6 +8,12 @@ export default function useSubmitOrder() {
     mutationFn: submitOrder,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
+      // backend je skinuo zalihu pića -> osvježi stanje (i neaktivne liste,
+      // jer pića imaju staleTime: Infinity + refetchOnMount: false)
+      queryClient.invalidateQueries({
+        queryKey: ["menu", "drink"],
+        refetchType: "all",
+      });
     },
   });
 }

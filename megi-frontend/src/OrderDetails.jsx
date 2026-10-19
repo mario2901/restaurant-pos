@@ -33,7 +33,6 @@ export default function OrderDetails({
   editing = false,
   storno,
 }) {
-  const [confirming, setConfirming] = useState(false);
   // storno koji čeka potvrdu: { label, request }
   const [pendingStorno, setPendingStorno] = useState(null);
   // označene stavke za storno: { [itemId]: količina }
@@ -268,28 +267,6 @@ export default function OrderDetails({
             </button>
           </div>
         )
-      ) : confirming ? (
-        <div className={styles.confirm}>
-          <p>Izdati račun? Narudžba se zatvara i sto postaje slobodan.</p>
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={styles.secondary}
-              onClick={() => setConfirming(false)}
-              disabled={isBilling}
-            >
-              Odustani
-            </button>
-            <button
-              type="button"
-              className={styles.primary}
-              onClick={() => onBill(order)}
-              disabled={isBilling}
-            >
-              {isBilling ? "Šaljem..." : "Printaj račun"}
-            </button>
-          </div>
-        </div>
       ) : (
         <div className={styles.actions}>
           {order.status === "NEW" && (
@@ -305,17 +282,15 @@ export default function OrderDetails({
             <button
               type="button"
               className={styles.primary}
-              // zatvorena narudžba: samo ponovni print, ne treba potvrda zatvaranja
-              onClick={() =>
-                order.status === "DONE" ? onBill(order) : setConfirming(true)
-              }
+              // prvi klik: zatvara narudžbu i printa račun (DONE = samo ponovni print)
+              onClick={() => onBill(order)}
               disabled={isBilling}
             >
-              {order.status === "DONE"
-                ? isBilling
-                  ? "Šaljem..."
-                  : "Ponovi račun"
-                : "Račun"}
+              {isBilling
+                ? "Šaljem..."
+                : order.status === "DONE"
+                  ? "Ponovi račun"
+                  : "Račun"}
             </button>
           )}
         </div>

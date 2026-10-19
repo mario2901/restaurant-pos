@@ -3,9 +3,11 @@ import useChangePin from "./hooks/useChangePin";
 import card from "./style/ProfilCard.module.css";
 import styles from "./style/ChangePin.module.css";
 
-// isto pravilo kao backend (PinRequest): 4 do 6 znamenki
-const PIN_PATTERN = /^\d{4,6}$/;
-const onlyDigits = (value) => value.replace(/\D/g, "").slice(0, 6);
+// PIN: točno 4 znamenke (kao Login i Admin -> Konobar)
+// Prijava i dodavanje korisnika traže TOČNO 4 znamenke — isto i ovdje,
+// inače bi se konobar s PIN-om od 5-6 znamenki zaključao (login ga ne prima).
+const PIN_PATTERN = /^\d{4}$/;
+const onlyDigits = (value) => value.replace(/\D/g, "").slice(0, 4);
 
 export default function ChangePin({ userId }) {
   const [pin, setPin] = useState("");
@@ -24,7 +26,7 @@ export default function ChangePin({ userId }) {
   function handleSubmit(e) {
     e.preventDefault();
     if (!PIN_PATTERN.test(pin)) {
-      setFormError("PIN mora imati 4 do 6 znamenki.");
+      setFormError("PIN mora imati 4 znamenke.");
       return;
     }
     if (pin !== confirm) {

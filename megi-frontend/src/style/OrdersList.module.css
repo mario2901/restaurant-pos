@@ -167,3 +167,86 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+
+/* "Prikaži još" — renderira sljedećih N već dohvaćenih narudžbi */
+.moreBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  margin-top: 10px;
+  border: 1px dashed #3a4452;
+  border-radius: 10px;
+  background: transparent;
+  color: #cfd7e0;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.moreBtn:hover {
+  border-style: solid;
+  border-color: #4f7fb5;
+  background: rgba(79, 127, 181, 0.12);
+}
+
+.moreCount {
+  color: #75818f;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+/* ---- vrsta narudžbe: stol / dostava / za ponijeti ---- */
+
+.table {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kindBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* stol — narančasta (postojeći accent) */
+.kindTable {
+  border-left-color: #e8590c;
+}
+.kindTable .kindBadge {
+  background: rgba(232, 89, 12, 0.16);
+  color: #ffa36e;
+}
+
+/* dostava — plava */
+.kindDelivery {
+  border-left-color: #3b8bdb;
+  background: linear-gradient(90deg, rgba(59, 139, 219, 0.1), transparent 45%),
+    var(--card);
+}
+.kindDelivery .kindBadge {
+  background: rgba(59, 139, 219, 0.2);
+  color: #8cc4ff;
+}
+
+/* za ponijeti — zelena */
+.kindTakeaway {
+  border-left-color: #2fb36b;
+  background: linear-gradient(90deg, rgba(47, 179, 107, 0.1), transparent 45%),
+    var(--card);
+}
+.kindTakeaway .kindBadge {
+  background: rgba(47, 179, 107, 0.2);
+  color: #86e3ad;
+}

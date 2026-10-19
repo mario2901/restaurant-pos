@@ -1,0 +1,208 @@
+.categoryFilter {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 24px 40px 16px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #2e3742;
+  border-radius: 10px;
+  background-color: #1d232b;
+  color: #b9c3cf;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.tab:hover {
+  background-color: #2b3440;
+}
+
+.tab:focus-visible {
+  outline: 2px solid #5b8fd0;
+  outline-offset: 2px;
+}
+
+.tabActive,
+.tabActive:hover {
+  background-color: #3d6a9e;
+  border-color: #5b8fd0;
+  color: #ffffff;
+}
+
+.count {
+  min-width: 22px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background-color: #2b3440;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.tabActive .count {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+  padding: 0 40px 40px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 132px;
+  padding: 16px 16px 14px;
+  border-radius: 12px;
+  border: 1px solid #2e3742;
+  background-color: #1d232b;
+  color: #e8edf3;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    transform 0.1s;
+}
+
+.card:hover {
+  border-color: #4f7fb5;
+  background-color: #212934;
+}
+
+.card:active {
+  transform: scale(0.98);
+}
+
+.card:focus-visible {
+  outline: 2px solid #5b8fd0;
+  outline-offset: 2px;
+}
+
+.selected,
+.selected:hover {
+  background-color: #1f2c3d;
+  border-color: #5b8fd0;
+  box-shadow: inset 0 0 0 1px #5b8fd0;
+}
+
+.name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #e8edf3;
+}
+
+.price {
+  color: #93a0ae;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.quantity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background-color: #151a21;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.quantity::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.ok {
+  color: #c9d2dc;
+}
+.ok::before {
+  background-color: #4caf7a;
+}
+
+.low {
+  color: #f0b860;
+}
+.low::before {
+  background-color: #e0a040;
+}
+
+.out {
+  color: #93a0ae;
+}
+.out::before {
+  background-color: #6b7683;
+}
+
+.info {
+  padding: 40px;
+  color: #93a0ae;
+  text-align: center;
+}
+
+/* Stranica zalihe: bez vanjskog paddinga, tabovi lijevo */
+.compact .categoryFilter {
+  justify-content: flex-start;
+  padding: 0 0 16px;
+}
+
+.compact .grid {
+  padding: 0;
+}
+
+.compact .info {
+  margin: 0;
+  padding: 56px 24px;
+  border: 1px dashed #2e3742;
+  border-radius: 12px;
+}
+
+@media (max-width: 600px) {
+  .categoryFilter {
+    padding: 16px 16px 12px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0 16px 24px;
+  }
+
+  .compact .categoryFilter,
+  .compact .grid {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* Admin: piće skinuto s karte */
+.unavailable {
+  opacity: 0.5;
+}
+
+.unavailable.selected {
+  opacity: 0.8;
+}

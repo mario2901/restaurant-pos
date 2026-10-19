@@ -12,6 +12,7 @@ import java.util.List;
  * @param takeaway true za dostavu i za ponijeti — hrana se pakira
  * @param notice   istaknuta napomena za vrh tiketa, npr. "ZA PONIJETI"; null ako je nema
  * @param orderNote napomena narudžbe za dostavu / za ponijeti (adresa, telefon); null ako je nema
+ * @param addition  true = "Dodaj još" na narudžbu koja je već ranije poslana (kuhinja vidi da je dodatak)
  */
 public record Ticket(TicketType type,
                      Long orderId,
@@ -20,9 +21,21 @@ public record Ticket(TicketType type,
                      LocalDateTime printedAt,
                      List<TicketLine> lines,
                      BigDecimal total,
-                     boolean takeaway,
+                     Boolean takeaway,
                      String notice,
-                     String orderNote) {
+                     String orderNote,
+                     Boolean addition) {
+
+    /*
+     * Boolean (ne boolean): tikete šalje i frontend (izvještaji, ponovni ispis),
+     * a Jackson 3 (Spring Boot 4) odbija JSON kojem nedostaje primitivno polje
+     * -> 400. Nedostajuće / null vrijednosti ovdje postaju false, pa su
+     * takeaway() i addition() uvijek sigurni za if/&&.
+     */
+    public Ticket {
+        takeaway = takeaway != null && takeaway;
+        addition = addition != null && addition;
+    }
 
     public boolean isEmpty() {
         return lines == null || lines.isEmpty();

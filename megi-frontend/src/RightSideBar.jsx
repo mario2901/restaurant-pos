@@ -10,16 +10,29 @@ import { OrderContext } from "./context/OrderContext";
 // Sidebar prikazuje samo kuhinju: jela + dodaci (piće ide na šank)
 const KITCHEN_TYPES = new Set(["FOOD", "ADDON"]);
 
-const TABS = ["SVE", "DOSTAVA", "PONIJETI"];
-const TAB_LABEL = { SVE: "Sve", DOSTAVA: "Dostava", PONIJETI: "Ponijeti" };
+const TABS = ["SVE", "STOLOVI", "DOSTAVA", "PONIJETI"];
+const TAB_LABEL = {
+  SVE: "Sve",
+  STOLOVI: "Stolovi",
+  DOSTAVA: "Dostava",
+  PONIJETI: "Ponijeti",
+};
 const EMPTY_MESSAGE = {
   SVE: "Danas još nema narudžbi hrane.",
+  STOLOVI: "Danas još nema narudžbi za stolove.",
   DOSTAVA: "Danas još nema dostava.",
   PONIJETI: "Danas još nema narudžbi za ponijeti.",
 };
 
-// "SVE" propušta sve; ostali tabovi odgovaraju oznaci stola narudžbe
-const matchesTab = (order, tab) => tab === "SVE" || order.table === tab;
+const PACKED_TABLES = new Set(["DOSTAVA", "PONIJETI"]);
+
+// "SVE" propušta sve, "STOLOVI" sve osim dostave i za ponijeti,
+// DOSTAVA / PONIJETI odgovaraju oznaci stola narudžbe
+const matchesTab = (order, tab) => {
+  if (tab === "SVE") return true;
+  if (tab === "STOLOVI") return !PACKED_TABLES.has(order.table);
+  return order.table === tab;
+};
 
 export default function RightSideBar() {
   const { table, selectTable, showTickets } = useContext(OrderContext);
@@ -88,9 +101,9 @@ export default function RightSideBar() {
   function handleBill(order) {
     // nakon uspjeha React Query osvježi stolove → sto nema narudžbu → modal se sam zatvori
     billOrder.mutate(order.id, {
-      onSuccess: (ticket) => {
+      onSuccess: (result) => {
         setSelectedOrder(null);
-        if (ticket) showTickets([ticket]);
+        showTickets(result);
       },
     });
   }
@@ -104,7 +117,7 @@ export default function RightSideBar() {
             table={table}
             orderId={table.orderId}
             onSent={(result) => {
-              showTickets(result?.tickets);
+              showTickets(result);
             }}
           />
         )}
@@ -133,6 +146,9 @@ export default function RightSideBar() {
           </div>
 
           <OrdersList
+            // novi key po tabu -> limit se vraća na prvih 30
+            key={selectedTab}
+            pageSize={30}
             orders={visibleOrders}
             onSelect={setSelectedOrder}
             isPending={isPending}
@@ -150,10 +166,7 @@ export default function RightSideBar() {
         onBill={handleBill}
         isBilling={billOrder.isPending}
         billError={billOrder.error}
-        canBill={
-          selectedOrder?.table === "DOSTAVA" ||
-          selectedOrder?.table === "PONIJETI"
-        }
+        canBill={PACKED_TABLES.has(selectedOrder?.table)}
       />
     </>
   );

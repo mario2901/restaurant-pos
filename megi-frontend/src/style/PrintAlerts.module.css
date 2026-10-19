@@ -1,0 +1,142 @@
+/* Neisprintani tiketi — fiksno dolje lijevo, iznad svega */
+.wrap {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  width: min(420px, calc(100vw - 32px));
+  max-height: 60vh;
+  overflow-y: auto;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.job {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #c92a2a;
+  border-left: 4px solid #ff6b6b;
+  border-radius: 10px;
+  background: #2a1d20;
+  color: #f1f3f5;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+  animation: pop 0.2s ease-out;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.jobHead {
+  display: flex;
+  gap: 10px;
+}
+
+.icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #ff8787;
+}
+
+.jobText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.jobText strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.92rem;
+}
+
+.time {
+  color: #c1a3a6;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.what {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffd8a8;
+}
+
+.error {
+  font-size: 0.78rem;
+  color: #e3c2c5;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.retry,
+.ghost,
+.danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.retry {
+  flex: 1;
+  border: none;
+  background: #e8590c;
+  color: #fff;
+}
+
+.retry:hover:not(:disabled) {
+  background: #f76707;
+}
+
+.ghost {
+  border: 1px solid #5c3a3e;
+  background: transparent;
+  color: #e3c2c5;
+}
+
+.ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.danger {
+  border: none;
+  background: #c92a2a;
+  color: #fff;
+}
+
+.retry:disabled,
+.danger:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

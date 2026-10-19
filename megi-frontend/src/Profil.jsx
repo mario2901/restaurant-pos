@@ -82,9 +82,9 @@ export default function Profil() {
   // Na zatvorenoj narudžbi backend "Račun" samo ponovo vraća račun (ništa ne mijenja)
   function handleReprint(order) {
     billOrder.mutate(order.id, {
-      onSuccess: (ticket) => {
+      onSuccess: (result) => {
         setSelectedId(null);
-        if (ticket) showTickets([ticket]);
+        showTickets(result);
       },
     });
   }

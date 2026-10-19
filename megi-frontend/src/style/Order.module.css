@@ -298,3 +298,12 @@
   outline: none;
   border-color: #3d6aa0;
 }
+
+.error {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 107, 107, 0.12);
+  color: #ff8a8a;
+  font-size: 0.85rem;
+}

@@ -7,7 +7,6 @@ import com.example.megibackend.Exceptions.BusinessRuleException;
 import com.example.megibackend.Exceptions.NotFoundException;
 import com.example.megibackend.Repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,13 +33,14 @@ import java.util.List;
 @Transactional
 public class OrderService {
 
-    /**
-     * TODO PRIVREMENO: dok traje testiranje zaliha se ne provjerava ni ne skida
-     * (app.stock.check-enabled=false). Kad se vrati prava logika zalihe — makni
-     * ovo polje i sve if-ove koji ga koriste u addDrink/changeQuantity/restoreStock.
+    /*
+     * Zaliha pića: kad je obračun pića uključen (Admin -> Postavke), skida se kod
+     * narudžbe i vraća kod storna/brisanja, ali NIKAD ne blokira narudžbu — smije
+     * u minus. Kad je isključen, zaliha se ne dira; svaka stavka pamti je li joj
+     * zaliha skinuta (DrinkOrderItem.stockDeducted), pa storno vraća samo ono
+     * što je stvarno skinuto, i kad se postavka u međuvremenu promijeni.
      */
-    @Value("${app.stock.check-enabled:true}")
-    private boolean stockCheckEnabled;
+    private final SettingsService settingsService;
 
     private final OrderRepository orderRepository;
     private final FoodRepository foodRepository;
@@ -283,13 +283,9 @@ public class OrderService {
         if (!drink.isAvailable()) {
             throw new BusinessRuleException("Piće '" + drink.getName() + "' trenutno nije dostupno.");
         }
-        // TODO PRIVREMENO: provjera i skidanje zalihe iskljuceni dok traje testiranje
-        if (stockCheckEnabled) {
-            if (drink.getStock() < quantity) {
-                throw new BusinessRuleException("Nema dovoljno na stanju: '" + drink.getName()
-                        + "' (na stanju " + drink.getStock() + ", traženo " + quantity + ").");
-            }
-
+        // zaliha se skida samo kad je obračun pića uključen; nedostatak ne blokira (smije u minus)
+        boolean deductStock = settingsService.drinksTracked();
+        if (deductStock) {
             drink.setStock(drink.getStock() - quantity);
             drinkRepository.save(drink);
         }
@@ -298,6 +294,7 @@ public class OrderService {
         item.setDrink(drink);
         item.setQuantity(quantity);
         item.setPriceAtOrder(drink.getPrice());
+        item.setStockDeducted(deductStock);
         item.setStatus(ItemStatus.NEW);
 
         order.addItem(item);
@@ -421,13 +418,11 @@ public class OrderService {
         }
 
         int diff = newQuantity - item.getQuantity();
-        // TODO PRIVREMENO: korekcija zalihe preskace se dok je provjera iskljucena
-        if (stockCheckEnabled && diff != 0 && item instanceof DrinkOrderItem drinkItem) {
+        // korekcija zalihe kod promjene količine — bez blokiranja (smije u minus)
+        // samo ako je ovoj stavki zaliha skinuta kod narudžbe
+        if (diff != 0 && item instanceof DrinkOrderItem drinkItem && drinkItem.getDrink() != null
+                && drinkItem.hasDeductedStock()) {
             Drink drink = drinkItem.getDrink();
-            if (diff > 0 && drink.getStock() < diff) {
-                throw new BusinessRuleException("Nema dovoljno na stanju: '" + drink.getName()
-                        + "' (na stanju " + drink.getStock() + ").");
-            }
             drink.setStock(drink.getStock() - diff);
             drinkRepository.save(drink);
         }
@@ -756,10 +751,10 @@ public class OrderService {
     }
 
     private void restoreStock(OrderItem item, int qty) {
-        // TODO PRIVREMENO: nema sta vracati jer se zaliha ni ne skida
-        if (!stockCheckEnabled) return;
         if (item.getStatus() == ItemStatus.CANCELLED || qty <= 0) return;
-        if (item instanceof DrinkOrderItem drinkItem && drinkItem.getDrink() != null) {
+        // vraća se samo ono što je stvarno skinuto (stavka iz razdoblja bez obračuna pića -> ništa)
+        if (item instanceof DrinkOrderItem drinkItem && drinkItem.getDrink() != null
+                && drinkItem.hasDeductedStock()) {
             Drink drink = drinkItem.getDrink();
             drink.setStock(drink.getStock() + qty);
             drinkRepository.save(drink);

@@ -1,111 +1,126 @@
+/* Detalji u otvorenoj kartici jela (ispod porcija) */
+
 .orderItem {
-  position: relative;
-  padding: 1.5rem;
-  border: 1px solid var(--card-border);
-  border-radius: 1rem;
-  background: var(--card-bg);
-}
-
-.orderItem h3 {
-  margin: 0 2.5rem 1.25rem 0;
-  color: var(--title);
-}
-
-.closeBtn {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  line-height: 1;
-  color: var(--muted);
-  cursor: pointer;
-}
-
-.closeBtn:hover {
-  background: var(--control-bg);
-  color: var(--title);
-}
-
-/* ---- porcije / opcije ---- */
-
-.portions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.625rem;
-}
-
-.portionBtn {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--card-border);
+  animation: reveal 0.15s ease-out;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- opcije: male "pill" oznake ---- */
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.optionsTitle {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.optionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.optionBtn {
+  display: inline-flex;
   align-items: center;
-  gap: 0.125rem;
-  min-width: 5rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid transparent;
-  border-radius: 0.5rem;
-  background-color: var(--portion-bg);
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--control-border);
+  border-radius: 999px;
+  background-color: transparent;
   color: var(--portion-text);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.portionBtn:hover {
+.optionBtn:hover {
   background-color: var(--portion-hover);
 }
 
-.portionActive {
+.optionActive,
+.optionActive:hover {
   border-color: var(--accent);
-  background-color: var(--portion-hover);
+  background-color: rgba(47, 109, 176, 0.25);
+  color: #fff;
 }
 
 .price {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--portion-price);
 }
 
-.options {
-  padding-top: 1rem;
+/* ---- napomena ---- */
+
+.note {
+  width: 100%;
+  box-sizing: border-box;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--control-bg);
+  color: var(--control-text);
+  font: inherit;
+  font-size: 0.82rem;
 }
 
-.optionsTitle {
-  margin: 0 0 0.5rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.note::placeholder {
   color: var(--muted);
 }
 
-/* ---- donji red ---- */
+.note:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ---- količina + Dodaj ---- */
 
 .bottom {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
+  gap: 6px;
 }
 
 .stepper {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  height: 2.75rem;
+  height: 36px;
   border: 1px solid var(--control-border);
-  border-radius: 999px;
+  border-radius: 8px;
   background: var(--control-bg);
   overflow: hidden;
 }
 
 .stepBtn {
-  width: 2.5rem;
+  width: 30px;
   height: 100%;
   display: flex;
   align-items: center;
@@ -113,7 +128,7 @@
   border: none;
   background: transparent;
   color: var(--control-text);
-  font-size: 1.125rem;
+  font-size: 1rem;
   line-height: 1;
   cursor: pointer;
 }
@@ -128,72 +143,48 @@
 }
 
 .qty {
-  min-width: 2rem;
+  min-width: 22px;
   text-align: center;
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--control-text);
 }
 
-.note {
+.addBtn {
   flex: 1;
   min-width: 0;
-  height: 2.75rem;
-  padding: 0 1rem;
-  border: 1px solid var(--control-border);
-  border-radius: 999px;
-  background: var(--control-bg);
-  color: var(--control-text);
-  font: inherit;
-  font-size: 0.9375rem;
-}
-
-.note::placeholder {
-  color: var(--muted);
-}
-
-.note:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.addBtn {
-  flex-shrink: 0;
-  height: 2.75rem;
-  padding: 0 1.5rem;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0 12px;
   border: none;
-  border-radius: 999px;
+  border-radius: 8px;
   background-color: var(--accent);
   color: var(--accent-text);
   font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
 }
 
-.addBtn:hover:not(:disabled) {
+.addBtn > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.addTotal {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
+}
+
+.addBtn:hover {
   background-color: var(--accent-hover);
 }
 
-.addBtn:disabled {
-  background-color: var(--disabled-bg);
-  color: var(--disabled-text);
-  cursor: default;
-}
-
-@media (max-width: 34rem) {
-  .bottom {
-    flex-wrap: wrap;
-  }
-
-  .note {
-    order: -1;
-    flex-basis: 100%;
-  }
-
-  .addBtn {
-    flex: 1;
-  }
+.addBtn:active {
+  transform: scale(0.98);
 }

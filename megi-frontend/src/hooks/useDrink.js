@@ -1,15 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { API } from "../data/api";
 
-const useDrink = () => {
+/**
+ *  - useDrink()              -> konobar / zalihe, samo dostupna  (key ["menu","drink"])
+ *  - useDrink({ all: true }) -> Admin, i skinuta s karte          (key ["menu","drink","all"])
+ */
+const useDrink = ({ all = false } = {}) => {
   async function fetchDrink() {
-    const response = await fetch(`${API}/drinks?onlyAvailable=true`);
+    const response = await fetch(`${API}/drinks?onlyAvailable=${!all}`);
     if (!response.ok) throw new Error("Greška pri učitavanju pića.");
     return response.json();
   }
 
   return useQuery({
-    queryKey: ["menu", "drink"],
+    queryKey: all ? ["menu", "drink", "all"] : ["menu", "drink"],
     queryFn: fetchDrink,
 
     staleTime: Infinity,

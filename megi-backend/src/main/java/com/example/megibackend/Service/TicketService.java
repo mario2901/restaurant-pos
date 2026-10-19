@@ -18,9 +18,12 @@ import java.util.List;
 /**
  * Slaganje tiketa za print.
  *
- * Pravila (dogovorena kod dizajna modela):
- *  - kuhinjski tiket: hrana i prilozi, s porcijom i napomenom, BEZ cijena
- *  - šank tiket: sve stavke s cijenama
+ * Pravila:
+ *  - "Naruči" / "Dodaj još": printa se SAMO kuhinjski tiket (hrana i prilozi, bez cijena)
+ *  - šank dobiva papir tek kod zatvaranja (račun) i ponovnog printa računa
+ *  - "Dodaj još": kuhinjski tiket je označen kao DODATAK s brojem narudžbe i stolom
+ *  - storno: kuhinja uvijek (ako ima hrane), šank samo ako je narudžba već zatvorena
+ *    (račun je već isprintan, pa šank mora znati da ga korigira)
  *  - račun: sve ne-stornirane stavke narudžbe s ukupnim iznosom
  *  - dostava i za ponijeti: svi tiketi imaju takeaway=true i notice za vrh tiketa
  *
@@ -35,21 +38,36 @@ public class TicketService {
     private final OrderRepository orderRepository;
 
     /**
-     * Tiketi za stavke koje je upravo vratio OrderService.sendNewItems().
-     * Vraća samo one tikete koji imaju redova — ako je konobar naručio
-     * samo piće, kuhinjski tiket se ne generira.
+     * Tiketi za stavke koje je upravo vratio OrderService.sendNewItems() ("Naruči" / "Dodaj još").
+     * Vraća SAMO kuhinjski tiket — šank dobiva račun tek kod zatvaranja.
+     * Ako je naručeno samo piće, lista je prazna (ništa se ne printa).
      */
     public List<Ticket> forSentItems(Long orderId, List<OrderItem> items) {
         Order order = getOrder(orderId);
-        List<Ticket> tickets = new ArrayList<>();
+        boolean addition = isAddition(order, items);
 
-        Ticket kitchen = kitchenTicket(order, items);
-        if (!kitchen.isEmpty()) tickets.add(kitchen);
+        List<TicketLine> lines = active(items).stream()
+                .filter(this::isKitchenItem)
+                .map(item -> kitchenLine(item, item.getActiveQuantity()))
+                .toList();
+        if (lines.isEmpty()) return List.of();
 
-        Ticket bar = barTicket(order, items);
-        if (!bar.isEmpty()) tickets.add(bar);
+        String notice = addition ? additionNotice(order) : notice(order);
+        return List.of(new Ticket(TicketType.KITCHEN, order.getId(), order.getTable(), waiterName(order),
+                LocalDateTime.now(), lines, null, order.isPacked(), notice, orderNote(order), addition));
+    }
 
-        return tickets;
+    /** Narudžba je već imala poslanih stavki prije ovog slanja -> ovo je "Dodaj još". */
+    private boolean isAddition(Order order, List<OrderItem> sent) {
+        java.util.Set<Long> sentIds = sent.stream()
+                .map(OrderItem::getId)
+                .collect(java.util.stream.Collectors.toSet());
+        return order.getItems().stream()
+                .anyMatch(i -> i.getStatus() != ItemStatus.NEW && !sentIds.contains(i.getId()));
+    }
+
+    private String additionNotice(Order order) {
+        return "DODATAK NA NARUDŽBU #" + order.getId() + " · " + place(order);
     }
 
     /** Ponovni print kuhinjskog tiketa za cijelu narudžbu. */
@@ -75,7 +93,7 @@ public class TicketService {
                 .toList();
 
         return new Ticket(TicketType.BILL, order.getId(), order.getTable(), waiterName(order),
-                LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order), orderNote(order));
+                LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order), orderNote(order), false);
     }
 
     public List<Ticket> forTakeawayMove(Long orderId, String fromTable){
@@ -86,7 +104,7 @@ public class TicketService {
 
         String notice = "Za PONIJETI - bio je stol " + fromTable;
         return List.of(new Ticket(TicketType.KITCHEN, order.getId(), order.getTable(), waiterName(order),
-                LocalDateTime.now(), base.lines(), null,  true, notice, orderNote(order)));
+                LocalDateTime.now(), base.lines(), null, true, notice, orderNote(order), false));
     }
 
     /**
@@ -100,15 +118,16 @@ public class TicketService {
 
         String notice = "NA STOL " + order.getTable() + " · NE PAKIRATI (bilo za ponijeti)";
         return List.of(new Ticket(TicketType.KITCHEN, order.getId(), order.getTable(), waiterName(order),
-                LocalDateTime.now(), base.lines(), null, false, notice, null));
+                LocalDateTime.now(), base.lines(), null, false, notice, null, false));
     }
 
     // ==================== STORNO TIKETI ====================
 
     /**
      * Tiketi za upravo odrađeni storno:
-     *  - STORNO_KITCHEN: hrana i prilozi (kao kuhinjski tiket), bez cijena — kuhinja zna da stane
-     *  - STORNO_BAR: sve stornirano s iznosima — šank / blagajna
+     *  - STORNO_KITCHEN: hrana i prilozi, bez cijena — kuhinja zna da stane (uvijek ako ima hrane)
+     *  - STORNO_BAR: sve stornirano s iznosima — SAMO ako je narudžba već bila zatvorena
+     *    (račun je otišao na šank); dok je stol otvoren šank još nema papir za tu narudžbu
      * Vraća samo tikete koji imaju redova.
      */
     public List<Ticket> forStorno(Order order, List<OrderService.StornoLine> stornoLines) {
@@ -124,8 +143,10 @@ public class TicketService {
                 .toList();
         if (!kitchenLines.isEmpty()) {
             tickets.add(new Ticket(TicketType.STORNO_KITCHEN, order.getId(), order.getTable(), waiterName(order),
-                    now, kitchenLines, null, order.isPacked(), notice, orderNote(order)));
+                    now, kitchenLines, null, order.isPacked(), notice, orderNote(order), false));
         }
+
+        if (order.getClosedAt() == null) return tickets;
 
         List<TicketLine> barLines = stornoLines.stream()
                 .map(l -> {
@@ -140,14 +161,20 @@ public class TicketService {
                 })
                 .toList();
         tickets.add(new Ticket(TicketType.STORNO_BAR, order.getId(), order.getTable(), waiterName(order),
-                now, barLines, sum(barLines), order.isPacked(), notice, orderNote(order)));
+                now, barLines, sum(barLines), order.isPacked(), notice, orderNote(order), false));
 
         return tickets;
     }
 
     private String stornoNotice(Order order) {
+        return "STORNO NARUDŽBE #" + order.getId() + " · " + place(order);
+    }
+
+    /** "STOL 5" / "DOSTAVA — ZA PONIJETI" / "ZA PONIJETI" — za napomene na tiketu. */
+    private String place(Order order) {
         String packed = notice(order);
-        return packed != null ? "STORNO · " + packed : "STORNO";
+        if (packed != null) return packed;
+        return "STOL " + order.getTable();
     }
 
     // ==================== SLAGANJE TIKETA ====================
@@ -159,7 +186,7 @@ public class TicketService {
                 .toList();
 
         return new Ticket(TicketType.KITCHEN, order.getId(), order.getTable(), waiterName(order),
-                LocalDateTime.now(), lines, null, order.isPacked(), notice(order), orderNote(order));
+                LocalDateTime.now(), lines, null, order.isPacked(), notice(order), orderNote(order), false);
     }
 
     private Ticket barTicket(Order order, List<OrderItem> items) {
@@ -168,7 +195,7 @@ public class TicketService {
                 .toList();
 
         return new Ticket(TicketType.BAR, order.getId(), order.getTable(), waiterName(order),
-                LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order), orderNote(order));
+                LocalDateTime.now(), lines, sum(lines), order.isPacked(), notice(order), orderNote(order), false);
     }
 
     /** Kuhinja: porcija, opcije i napomena da kuhar zna što radi — cijena ga ne zanima. */
@@ -177,12 +204,19 @@ public class TicketService {
         return item instanceof FoodOrderItem || item instanceof AddonOrderItem;
     }
 
-    /** Kuhinjski red: jelo s porcijom, opcijama i napomenom; prilog samo naziv. */
+    /**
+     * Kuhinjski red: "Pizza Bio - Velika" u jednom redu (formatter prelama ako ne stane),
+     * ispod opcije i napomena; prilog samo naziv.
+     */
     private TicketLine kitchenLine(OrderItem item, int quantity) {
-        String detail = (item instanceof FoodOrderItem food)
-                ? joinDetail(portionSize(food), optionNames(food), food.getNote())
-                : null;
-        return new TicketLine(quantity, nameOf(item), detail, null);
+        if (item instanceof FoodOrderItem food) {
+            String portion = portionSize(food);
+            String name = (portion == null || portion.isBlank())
+                    ? nameOf(item)
+                    : nameOf(item) + " - " + portion;
+            return new TicketLine(quantity, name, joinDetail(optionNames(food), food.getNote()), null);
+        }
+        return new TicketLine(quantity, nameOf(item), null, null);
     }
 
     private TicketLine pricedLine(OrderItem item) {

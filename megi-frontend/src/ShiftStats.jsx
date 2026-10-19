@@ -25,7 +25,10 @@ export default function ShiftStats({ userId }) {
           </div>
           <div className={styles.stat}>
             <span className={styles.value}>{formatPrice(mine?.total ?? 0)}</span>
-            <span className={styles.label}>promet</span>
+            <span className={styles.label}>
+              {/* obračun pića isključen (Admin -> Postavke) -> piće nije u prometu */}
+              {report.drinksIncluded === false ? "promet (bez pića)" : "promet"}
+            </span>
           </div>
         </div>
       )}

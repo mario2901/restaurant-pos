@@ -1,0 +1,353 @@
+.categoryFilter {
+  display: flex;
+  justify-content: space-evenly;
+  padding: 40px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: #232a33;
+  color: #b9c3cf;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.tab:hover {
+  background-color: #2b3440;
+}
+
+.tabActive,
+.tabActive:hover {
+  background-color: #3d6a9e;
+  color: #ffffff;
+}
+
+.count {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 104px;
+  padding: 12px;
+  border-radius: 10px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--name);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  text-align: left;
+  transition:
+    border-color 0.15s,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card:hover {
+  border-color: var(--card-hover);
+}
+
+.cardOpen,
+.cardOpen:hover {
+  z-index: 1;
+  transform: scale(1.02);
+  border-color: var(--accent);
+  background-color: #212833;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.name {
+  flex: 1;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--name);
+}
+
+.closeBtn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin: -4px -4px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--desc);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.closeBtn:hover {
+  background: var(--portion-hover);
+  color: var(--name);
+}
+
+.description {
+  margin: -4px 0 0;
+  color: var(--desc);
+  font-size: 0.78rem;
+  line-height: 1.3;
+  /* zatvorena kartica: najviše 2 reda opisa */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardOpen .description {
+  -webkit-line-clamp: unset;
+}
+
+/* ---- porcije: uvijek u jednom redu ---- */
+
+.portions {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 6px;
+  margin-top: auto;
+}
+
+.portionBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 0;
+  padding: 6px 4px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background-color: var(--portion-bg);
+  color: var(--portion-text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.12s;
+}
+
+.portionBtn > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portionBtn:hover {
+  background-color: var(--portion-hover);
+}
+
+.portionBtn:active {
+  transform: scale(0.96);
+}
+
+.portionActive,
+.portionActive:hover {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+.portionPrice {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--portion-price);
+}
+
+.portionActive .portionPrice {
+  color: #fff;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.backBtn {
+  justify-self: start;
+  padding: 10px 16px;
+  border: 1px solid #2e3742;
+  border-radius: 8px;
+  background-color: #1d232b;
+  color: #cfd7e0;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.backBtn:hover {
+  border-color: #4f7fb5;
+}
+
+.tableTitle {
+  margin: 0;
+  color: #e8edf3;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 160px;
+  gap: 24px;
+  align-items: start;
+}
+
+.addonsPanel {
+  position: sticky;
+  top: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #1b2029;
+  border: 1px solid #2a303b;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.addonsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.addonsTitle {
+  margin: 0 0 12px;
+  color: #e6e8eb;
+  font-size: 15px;
+}
+
+.addon {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 8px;
+  border: 1px solid #2f3643;
+  background: #232a35;
+  color: #e6e8eb;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.addon span {
+  font-size: 10px;
+}
+
+.addon:hover {
+  background: #2c3544;
+  border-color: #3d6aa0;
+}
+
+.addon:active {
+  transform: scale(0.97);
+}
+
+.empty {
+  color: #8a93a3;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .addonsPanel {
+    position: static;
+  }
+  .addonsList {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  }
+}
+
+/* ---- Admin: samo prikaz, bez klikanja ---- */
+
+.portionStatic,
+.portionStatic:hover,
+.addonStatic,
+.addonStatic:hover,
+.portionStatic:active,
+.addonStatic:active {
+  background-color: var(--portion-bg);
+  border-color: transparent;
+  cursor: default;
+  transform: none;
+}
+
+.addonStatic {
+  align-items: center;
+  text-align: center;
+}
+
+/* ---- Admin: klik za uređivanje ---- */
+
+.cardEditable {
+  cursor: pointer;
+}
+
+.cardSelected,
+.cardSelected:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.addonSelected,
+.addonSelected:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* skinuto s menija — vidi se samo u Adminu */
+.cardUnavailable {
+  opacity: 0.5;
+}
+
+.cardUnavailable.cardSelected {
+  opacity: 0.8;
+}
+
+.badge {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #4a2b2b;
+  color: #ff9b9b;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

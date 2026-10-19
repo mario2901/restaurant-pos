@@ -13,7 +13,7 @@ export default function useMoveToTakeaway() {
     onSuccess: (result, { orderId }) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       retargetTable(orderId, "PONIJETI");
-      showTickets(result?.tickets);
+      showTickets(result);
     },
   });
 }

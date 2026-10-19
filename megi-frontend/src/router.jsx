@@ -5,6 +5,8 @@ import App from "./App.jsx";
 import Login from "./Login.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import Profil from "./Profil.jsx";
+import DrinksStocks from "./DrinksStocks.jsx";
+import Admin from "./Admin.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +20,11 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <App /> },
           { path: "profil", element: <Profil /> },
+          { path: "pice", element: <DrinksStocks /> },
+          {
+            element: <ProtectedRoute allowedRoles={["ADMIN"]} />,
+            children: [{ path: "admin", element: <Admin /> }],
+          },
         ],
       },
     ],
