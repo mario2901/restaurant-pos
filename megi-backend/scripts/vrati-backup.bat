@@ -26,13 +26,15 @@ echo  VRACANJE BACKUPA BAZE
 echo  =====================
 echo.
 
-if exist "%DATA%\megi.lock.db" (
-  echo [!] Postoji %DATA%\megi.lock.db - backend je vjerojatno upaljen.
-  echo     Ugasi backend pa pokreni skriptu ponovno.
-  echo     Ako si siguran da je ugasen ^(npr. nakon nestanka struje^), obrisi megi.lock.db rucno.
+rem Upaljen program = netko slusa na 8080 (sam megi.lock.db ostane i nakon
+rem nestanka struje / naglog gasenja, pa nije dokaz da program radi).
+netstat -ano | findstr /r /c:":8080 .*LISTENING" >nul
+if not errorlevel 1 (
+  echo [!] Program je upaljen ^(port 8080 je zauzet^). Zatvori ga pa pokreni skriptu ponovno.
   pause
   exit /b 1
 )
+if exist "%DATA%\megi.lock.db" del /q "%DATA%\megi.lock.db"
 
 if not exist "%BACKUP%\megi-*.zip" (
   echo [!] U %BACKUP% nema backupa.

@@ -173,6 +173,87 @@ function PrinterActions({ printer }) {
   );
 }
 
+// Veličina stavki na kuhinjskom tiketu (visina x širina). 2x2 = tekst printera,
+// 3x2 i 4x3 = backend crta stavke kao sliku (Datecs tekst zna najviše 2x).
+const KITCHEN_FONTS = [
+  { id: "2x2", label: "2× × 2×", hint: "standard" },
+  { id: "3x2", label: "3× × 2×", hint: "veće" },
+  { id: "4x3", label: "4× × 3×", hint: "najveće" },
+];
+
+function KitchenFontPicker({ settings }) {
+  const update = useUpdateSettings();
+  const current = settings.kitchenFontSize ?? "2x2";
+
+  return (
+    <div className={styles.field}>
+      <span className={styles.label}>Veličina stavki na kuhinji (visina × širina)</span>
+      <div className={s.segment}>
+        {KITCHEN_FONTS.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            className={current === f.id ? s.segmentActive : ""}
+            disabled={update.isPending}
+            onClick={() => current !== f.id && update.mutate({ kitchenFontSize: f.id })}
+          >
+            {f.label} <small>({f.hint})</small>
+          </button>
+        ))}
+      </div>
+      <Hint>
+        Vrijedi odmah za novu narudžbu, dodatak i storno u kuhinji. 3×2 i 4×3 ispisuju
+        stavke kao sliku, pa je tiket duži. Klikni „Probni ispis" da vidiš veličinu
+        na papiru.
+      </Hint>
+      {update.error && <p className={styles.error}>{update.error.message}</p>}
+    </div>
+  );
+}
+
+// Skraćivanje riječi na kuhinji — ista logika kao TicketService.shortWords
+const WORD_LENGTHS = [0, 4, 5, 6, 7, 8, 10, 12];
+const shortWords = (text, max) =>
+  max > 0
+    ? text
+        .trim()
+        .split(/\s+/)
+        .map((w) => Array.from(w).slice(0, max).join(""))
+        .join(" ")
+    : text;
+
+function KitchenWordLengthPicker({ settings }) {
+  const update = useUpdateSettings();
+  const current = settings.kitchenWordLength ?? 6;
+  const options = WORD_LENGTHS.includes(current)
+    ? WORD_LENGTHS
+    : [...WORD_LENGTHS, current].sort((a, b) => a - b);
+  const example = "Gurmanska pljeskavica - Velika";
+
+  return (
+    <div className={styles.field}>
+      <span className={styles.label}>Skraćivanje riječi na kuhinji</span>
+      <select
+        className={styles.input}
+        value={current}
+        disabled={update.isPending}
+        onChange={(e) => update.mutate({ kitchenWordLength: Number(e.target.value) })}
+      >
+        {options.map((n) => (
+          <option key={n} value={n}>
+            {n === 0 ? "Bez skraćivanja (puni nazivi)" : `Prvih ${n} slova svake riječi`}
+          </option>
+        ))}
+      </select>
+      <Hint>
+        Primjer: „{example}" → <strong>{shortWords(example, current)}</strong>. Skraćuju se
+        samo naziv jela i porcija na kuhinji; napomene, šank i račun ostaju puni.
+      </Hint>
+      {update.error && <p className={styles.error}>{update.error.message}</p>}
+    </div>
+  );
+}
+
 function PrintersCard({ settings }) {
   const update = useUpdateSettings();
   const [kitchenHost, setKitchenHost] = useState(settings.kitchenHost);
@@ -238,6 +319,8 @@ function PrintersCard({ settings }) {
             />
           </label>
         </div>
+        <KitchenFontPicker settings={settings} />
+        <KitchenWordLengthPicker settings={settings} />
         <PrinterActions printer="kitchen" />
       </div>
 

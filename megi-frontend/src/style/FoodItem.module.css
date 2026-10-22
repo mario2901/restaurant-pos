@@ -351,3 +351,195 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
+
+/* ---- značka: koliko je tog jela već u košarici ---- */
+.inCart {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid #e8590c;
+  background: #33241b;
+  color: #ffa36b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ======================= TABLET (701–1199 px) ======================= */
+@media (min-width: 701px) and (max-width: 1199px) {
+  .categoryFilter {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 0 16px;
+  }
+
+  .tab {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
+  .layout {
+    grid-template-columns: 1fr 130px;
+    gap: 14px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+    gap: 10px;
+  }
+
+  .card {
+    padding: 10px;
+    min-height: 96px;
+  }
+
+  .addonsPanel {
+    padding: 12px;
+  }
+
+  .addon {
+    padding: 10px 6px;
+    font-size: 13px;
+  }
+}
+
+/* ======================= MOBITEL (≤ 700 px) ======================= */
+@media (max-width: 700px) {
+  /* kategorije kao čipovi koji se listaju vodoravno, zalijepljeni na vrhu liste */
+  .categoryFilter {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 0 0 12px;
+    overflow-x: auto;
+    background: #15191f;
+    scrollbar-width: none;
+  }
+
+  .categoryFilter::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    flex: none;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid #2e3742;
+    border-radius: 999px;
+    background: #232a33;
+    color: #cfd7e0;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .tab:hover {
+    background: #232a33;
+  }
+
+  .tabActive,
+  .tabActive:hover {
+    border-color: #4f7fb5;
+    background: #24364c;
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .tabActive .count {
+    color: #c9dcf2;
+    opacity: 1;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .card {
+    gap: 10px;
+    min-height: 0;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .card:hover {
+    border-color: var(--card-border);
+  }
+
+  .cardOpen,
+  .cardOpen:hover {
+    transform: none;
+    border-color: var(--accent);
+  }
+
+  .name {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .description {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .portions {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+  }
+
+  .portionBtn {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 6px;
+    min-height: 48px;
+    padding: 0 12px;
+    border: 1px solid #333d4a;
+    border-radius: 10px;
+    background: #29313b;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .portionPrice {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .closeBtn {
+    width: 36px;
+    height: 36px;
+    margin: -8px -8px 0 0;
+    font-size: 1.4rem;
+  }
+
+  .addonsPanel {
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .addonsList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .addon {
+    min-height: 52px;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .addon span {
+    font-size: 12px;
+  }
+}

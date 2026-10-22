@@ -63,6 +63,20 @@ public class AppSettings {
     @Column(name = "bar_port")
     private Integer barPort;
 
+    /**
+     * Veličina stavki na kuhinjskom tiketu: "2x2" (default, tekst printera),
+     * "3x2" ili "4x3" (visina x širina, ispis kao slika). null = "2x2".
+     */
+    @Column(name = "kitchen_font_size", length = 10)
+    private String kitchenFontSize;
+
+    /**
+     * Na kuhinji se svaka riječ naziva jela/porcije skraćuje na ovoliko slova
+     * ("Capricosa" -> "Capric" za 6). 0 = bez skraćivanja. null = 6.
+     */
+    @Column(name = "kitchen_word_length")
+    private Integer kitchenWordLength;
+
     // ---- backup ----
 
     /** Druga lokacija za backup (USB, Google Drive / OneDrive folder). Prazno = samo glavna. */

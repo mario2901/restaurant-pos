@@ -116,7 +116,8 @@ const TICKET_CSS = `
 }
 .tkt-kitchen .tkt-name,
 .tkt-kitchen .tkt-qty {
-  font-size: 15px;
+  font-size: 24px;
+  line-height: 1.5;
 }
 .tkt-price {
   white-space: nowrap;
@@ -127,6 +128,21 @@ const TICKET_CSS = `
 }
 .tkt-kitchen .tkt-detail {
   font-size: 14px;
+  font-weight: 700;
+}
+.tkt-section {
+  margin: 3mm 0 1.5mm;
+  padding-bottom: 1mm;
+  border-bottom: 1px dashed #000;
+  font-size: 16px;
+  font-weight: 700;
+}
+.tkt-subtotal {
+  display: flex;
+  justify-content: space-between;
+  margin: 1mm 0 2mm;
+  padding-top: 1mm;
+  border-top: 1px dashed #000;
   font-weight: 700;
 }
 .tkt-total {
@@ -223,7 +239,17 @@ function TicketPaper({ ticket }) {
       <hr className="tkt-sep" />
 
       <ul className="tkt-lines">
-        {(ticket.lines ?? []).map((line, i) => (
+        {(ticket.lines ?? []).map((line, i) =>
+          line.style === "SECTION" ? (
+            <li key={i} className="tkt-section">
+              {line.name}
+            </li>
+          ) : line.style === "SUBTOTAL" ? (
+            <li key={i} className="tkt-subtotal">
+              <span>{line.name}</span>
+              <span>{formatPrice(line.lineTotal)}</span>
+            </li>
+          ) : (
           <li key={i} className="tkt-line">
             <div className="tkt-row">
               <span className="tkt-qty">
@@ -237,7 +263,8 @@ function TicketPaper({ ticket }) {
             </div>
             {line.detail && <div className="tkt-detail">{line.detail}</div>}
           </li>
-        ))}
+          ),
+        )}
       </ul>
 
       {ticket.total != null && (

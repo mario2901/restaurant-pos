@@ -61,7 +61,7 @@ export default function ReportButtons() {
     }
   }
   return (
-    <section className={card.card}>
+    <section className={`${card.card} ${styles.reports}`}>
       <h3 className={card.cardTitle}>Izvještaji</h3>
 
       <div className={styles.reportGrid}>

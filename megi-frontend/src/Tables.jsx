@@ -1,77 +1,16 @@
 import styles from "./style/Tables.module.css";
-import { useCallback, useContext, useMemo, useState } from "react";
-import { unutra, terasa, kat } from "./data/Tables.js";
-import useOrders from "./hooks/useOrders.js";
-import useBillOrder from "./hooks/useBillOrder.js";
+import { REONS, SPECIAL_BLOCKS as SPECIAL } from "./data/Tables.js";
+import { formatPrice } from "./data/menu.js";
+import useTableOrders from "./hooks/useTableOrders.js";
 import OrderDetailsDialog from "./OrderDetailsDialog.jsx";
-import { OrderContext } from "./context/OrderContext.jsx";
-
-const SPECIAL = [
-  { id: "DOSTAVA", name: "Dostava Mišo šoMi", hint: "" },
-  { id: "PONIJETI", name: "Za ponijeti", hint: "" },
-];
-const REONS = [
-  { id: "unutra", name: "Unutra", tables: unutra },
-  { id: "terasa", name: "Terasa", tables: terasa },
-  { id: "kat", name: "Kat", tables: kat },
-];
-const formatPrice = (price) =>
-  `${Number(price).toFixed(2).replace(".", ",")} KM`;
 
 const sumTotal = (orders) =>
   orders.reduce((sum, o) => sum + Number(o.total ?? 0), 0);
 
 export default function Tables({ reon, onReonChange, onSelectTable }) {
-  // Sve ide preko /orders/today; stol je zauzet dok ima otvorenu (NEW) narudžbu
-  const { data: orders = [], isError } = useOrders();
-  const byTable = useMemo(() => {
-    const map = {};
-    for (const order of orders) {
-      if (order.status !== "NEW") continue;
-      (map[String(order.table)] ??= []).push(order);
-    }
-    return map;
-  }, [orders]);
-  const billOrder = useBillOrder();
-  const { showTickets } = useContext(OrderContext);
+  const { ordersFor, isError, handleTableClick, dialogProps } =
+    useTableOrders(onSelectTable);
   const activeReon = REONS.find((r) => r.id === reon) ?? REONS[0];
-  const ordersFor = (label) => byTable[String(label)] ?? [];
-
-  // obični sto ima najviše jednu otvorenu narudžbu (backend je ponovo koristi)
-  const [selected, setSelected] = useState(null); // { label, name }
-  const selectedOrder = selected ? ordersFor(selected.label)[0] : null;
-
-  const { reset: resetBill } = billOrder;
-  const closeDetails = useCallback(() => {
-    setSelected(null);
-    resetBill();
-  }, [resetBill]);
-
-  function handleTableClick(label, name) {
-    const orders = ordersFor(label);
-
-    if (orders.length === 0) {
-      onSelectTable({ label, name, orders });
-    } else {
-      setSelected({ label, name });
-    }
-  }
-
-  function handleAddMore(order) {
-    const { label, name } = selected;
-    setSelected(null);
-    onSelectTable({ label, name, orders: [order], orderId: order.id });
-  }
-
-  function handleBill(order) {
-    // nakon uspjeha React Query osvježi stolove → sto nema narudžbu → modal se sam zatvori
-    billOrder.mutate(order.id, {
-      onSuccess: (result) => {
-        setSelected(null);
-        showTickets(result);
-      },
-    });
-  }
 
   return (
     <div>
@@ -156,15 +95,7 @@ export default function Tables({ reon, onReonChange, onSelectTable }) {
         })}
       </div>
 
-      <OrderDetailsDialog
-        order={selectedOrder}
-        title={selected?.name}
-        onClose={closeDetails}
-        onAddMore={handleAddMore}
-        onBill={handleBill}
-        isBilling={billOrder.isPending}
-        billError={billOrder.error}
-      />
+      <OrderDetailsDialog {...dialogProps} />
     </div>
   );
 }

@@ -16,6 +16,7 @@ const formatPrice = (price) =>
  * @param lowThreshold    do koliko komada je piće "pri kraju"
  * @param compact         bez vanjskog paddinga, tabovi lijevo (za stranicu zalihe)
  * @param showAll         Admin: i pića skinuta s karte (zatamnjena)
+ * @param searchAll       pretraga kroz sve kategorije (mobitel); kategorije se tada sakriju
  */
 export default function DrinkItem({
   handleAddDrink,
@@ -24,6 +25,7 @@ export default function DrinkItem({
   lowThreshold = 5,
   compact = false,
   showAll = false,
+  searchAll = false,
 }) {
   const {
     data: tabs = [],
@@ -35,9 +37,11 @@ export default function DrinkItem({
 
   const q = query.trim().toLowerCase();
   const countOf = (value) => drinks.filter((d) => d.category === value).length;
+  const acrossAll = searchAll && !!q;
   const visibleDrinks = drinks.filter(
     (d) =>
-      d.category === activeTab && (!q || d.name.toLowerCase().includes(q)),
+      (acrossAll || d.category === activeTab) &&
+      (!q || d.name.toLowerCase().includes(q)),
   );
 
   const stockInfo = (stock) => {
@@ -54,25 +58,29 @@ export default function DrinkItem({
 
   return (
     <div className={compact ? styles.compact : undefined}>
-      <nav className={styles.categoryFilter} aria-label="Kategorije pića">
-        {tabs.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            className={`${styles.tab} ${
-              tab.value === activeTab ? styles.tabActive : ""
-            }`}
-            onClick={() => setActiveTab(tab.value)}
-          >
-            {tab.label}
-            <span className={styles.count}>{countOf(tab.value)}</span>
-          </button>
-        ))}
-      </nav>
+      {!acrossAll && (
+        <nav className={styles.categoryFilter} aria-label="Kategorije pića">
+          {tabs.map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              className={`${styles.tab} ${
+                tab.value === activeTab ? styles.tabActive : ""
+              }`}
+              onClick={() => setActiveTab(tab.value)}
+            >
+              {tab.label}
+              <span className={styles.count}>{countOf(tab.value)}</span>
+            </button>
+          ))}
+        </nav>
+      )}
 
       {visibleDrinks.length === 0 ? (
         <p className={styles.info}>
-          {q ? "Nema pića koje odgovara pretrazi." : "Nema pića u ovoj kategoriji."}
+          {q
+            ? "Nema pića koje odgovara pretrazi."
+            : "Nema pića u ovoj kategoriji."}
         </p>
       ) : (
         <div className={styles.grid}>

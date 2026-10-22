@@ -54,3 +54,16 @@
 .success {
   color: #51cf66;
 }
+
+/* ======================= MOBITEL (≤ 700 px) ======================= */
+@media (max-width: 700px) {
+  /* 16 px: iOS ne zumira stranicu kad se tipka PIN */
+  .input {
+    height: 44px;
+    font-size: 16px;
+  }
+
+  .submit {
+    height: 44px;
+  }
+}

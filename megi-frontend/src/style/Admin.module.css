@@ -88,3 +88,104 @@
 .logout:hover {
   border-color: #ff6b6b;
 }
+
+/* ======================= TABLET (701–1199 px) ======================= */
+@media (min-width: 701px) and (max-width: 1199px) {
+  .sidebar {
+    width: 190px;
+    padding-bottom: 12px;
+  }
+
+  .brand {
+    margin: 4px 0;
+    font-size: 20px;
+  }
+
+  .nav {
+    gap: 6px;
+    padding: 0 10px;
+  }
+
+  .link {
+    min-height: 44px;
+    text-align: left;
+  }
+
+  /* uska traka: Stolovi i Odjava jedan ispod drugog */
+  .topBar {
+    flex-direction: column;
+    padding: 10px 10px 0;
+  }
+
+  .topBar .navBtn {
+    flex: none;
+    height: 40px;
+  }
+
+  .content {
+    padding: 14px;
+  }
+}
+
+/* ======================= MOBITEL (≤ 700 px) ======================= */
+/* izbornik postaje traka na vrhu (zalijepljena), sadržaj ispod u punoj širini */
+@media (max-width: 700px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    width: 100%;
+    gap: 8px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid #2e3742;
+  }
+
+  .topBar {
+    padding: max(10px, env(safe-area-inset-top)) 12px 0;
+  }
+
+  .navBtn {
+    height: 44px;
+  }
+
+  .brand {
+    display: none;
+  }
+
+  /* sekcije kao čipovi koji se listaju vodoravno */
+  .nav {
+    flex-direction: row;
+    gap: 8px;
+    padding: 0 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .link {
+    flex: none;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  /* na dodir :hover ostane "zalijepljen" -> aktivna sekcija mora ostati plava */
+  .nav .active,
+  .nav .active:hover {
+    background: #2563eb;
+    color: #fff;
+  }
+
+  .content {
+    padding: 14px 12px 24px;
+  }
+}

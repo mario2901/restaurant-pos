@@ -87,6 +87,10 @@ export default function OrdersList({
                   {kind.label}
                 </span>
                 {kind === TABLE_KIND && order.table}
+                {/* dostava / za ponijeti još otvorena (nije zatvorena ni otkazana) */}
+                {kind !== TABLE_KIND && order.status === "NEW" && (
+                  <span className={styles.openDot} title="Otvorena narudžba" />
+                )}
               </span>
               <span className={styles.meta}>#{order.id}</span>
               <span className={styles.time}>{formatTime(timeOf(order))}</span>

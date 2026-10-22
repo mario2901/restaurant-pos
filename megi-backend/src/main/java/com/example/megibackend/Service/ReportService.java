@@ -201,7 +201,7 @@ public class ReportService {
                     totals.addon = totals.addon.add(lineTotal);
                 }
 
-                totals.byItem.computeIfAbsent(itemName(item), SalesAccumulator::new)
+                totals.byItem.computeIfAbsent(key(item), k -> new SalesAccumulator(itemName(item), group(item)))
                         .add(item.getActiveQuantity(), lineTotal);
             }
         }
@@ -218,7 +218,7 @@ public class ReportService {
                 BigDecimal value = item.getStornoTotal();
                 storno.quantity += item.getStornoQuantity();
                 storno.total = storno.total.add(value);
-                storno.byItem.computeIfAbsent(itemName(item), SalesAccumulator::new)
+                storno.byItem.computeIfAbsent(key(item), k -> new SalesAccumulator(itemName(item), group(item)))
                         .add(item.getStornoQuantity(), value);
             }
         }
@@ -291,6 +291,16 @@ public class ReportService {
                 : total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP);
     }
 
+    /** Piće ide u grupu PICE, jela i prilozi u HRANA. */
+    private static String group(OrderItem item) {
+        return item instanceof DrinkOrderItem ? SalesRow.DRINK : SalesRow.FOOD;
+    }
+
+    /** Ključ za zbrajanje: isto ime u različitim grupama ostaje odvojeno. */
+    private String key(OrderItem item) {
+        return group(item) + "|" + itemName(item);
+    }
+
     private String itemName(OrderItem item) {
         if (item instanceof FoodOrderItem food && food.getFood() != null) {
             String portion = food.getPortion() != null ? food.getPortion().getSize() : null;
@@ -343,11 +353,13 @@ public class ReportService {
 
     private static final class SalesAccumulator {
         private final String name;
+        private final String group;
         private long quantity;
         private BigDecimal total = BigDecimal.ZERO;
 
-        private SalesAccumulator(String name) {
+        private SalesAccumulator(String name, String group) {
             this.name = name;
+            this.group = group;
         }
 
         private void add(int quantity, BigDecimal lineTotal) {
@@ -356,7 +368,7 @@ public class ReportService {
         }
 
         private SalesRow toRow() {
-            return new SalesRow(name, quantity, money(total));
+            return new SalesRow(name, quantity, money(total), group);
         }
     }
 

@@ -36,6 +36,7 @@ import java.util.List;
 public class TicketService {
 
     private final OrderRepository orderRepository;
+    private final SettingsService settingsService;
 
     /**
      * Tiketi za stavke koje je upravo vratio OrderService.sendNewItems() ("Naruči" / "Dodaj još").
@@ -211,12 +212,16 @@ public class TicketService {
     private TicketLine kitchenLine(OrderItem item, int quantity) {
         if (item instanceof FoodOrderItem food) {
             String portion = portionSize(food);
+            // "Standardna/Standardni/Standardno" kuhar ne treba — samo zauzima mjesto
+            if (isStandardPortion(portion)) portion = null;
+            int max = settingsService.kitchenWordLength(); // Admin -> Postavke printera
             String name = (portion == null || portion.isBlank())
-                    ? nameOf(item)
-                    : nameOf(item) + " - " + portion;
+                    ? shortWords(nameOf(item), max)
+                    : shortWords(nameOf(item), max) + " - " + shortWords(portion, max);
+            // opcije i napomena ("bez luka") ostaju pune — tu se ne smije ništa izgubiti
             return new TicketLine(quantity, name, joinDetail(optionNames(food), food.getNote()), null);
         }
-        return new TicketLine(quantity, nameOf(item), null, null);
+        return new TicketLine(quantity, shortWords(nameOf(item), settingsService.kitchenWordLength()), null, null);
     }
 
     private TicketLine pricedLine(OrderItem item) {
@@ -252,6 +257,28 @@ public class TicketService {
             return addon.getAddon().getName();
         }
         return "Stavka";
+    }
+
+    /**
+     * Na kuhinji je dovoljno prvih nekoliko slova svake riječi — više stane u red s velikim slovima.
+     * Za max = 6: "Pizza Capricciosa" -> "Pizza Capric", "Gurmanska pljeskavica" -> "Gurman pljesk".
+     * Kraće riječi ostaju cijele; razmaci se svode na jedan. max <= 0 -> bez skraćivanja.
+     */
+    static String shortWords(String text, int max) {
+        if (text == null || text.isBlank() || max <= 0) return text;
+        StringBuilder out = new StringBuilder();
+        for (String word : text.trim().split("\\s+")) {
+            if (out.length() > 0) out.append(' ');
+            int cut = word.codePointCount(0, word.length()) > max
+                    ? word.offsetByCodePoints(0, max)
+                    : word.length();
+            out.append(word, 0, cut);
+        }
+        return out.toString();
+    }
+
+    private static boolean isStandardPortion(String portion) {
+        return portion != null && portion.trim().toLowerCase().startsWith("standard");
     }
 
     private String portionSize(FoodOrderItem item) {

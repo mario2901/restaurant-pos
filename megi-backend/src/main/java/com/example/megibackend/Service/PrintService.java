@@ -72,7 +72,7 @@ public class PrintService {
     /** Rezultat automatskog printa. */
     public record Outcome(boolean printed, String error) {}
 
-    private static final byte DLE = 0x10, EOT = 0x04;
+    private static final byte DLE = 0x10, EOT = 0x04, ESC = 0x1B;
 
     private final PrinterProperties props;
     private final EscPosFormatter formatter;
@@ -211,7 +211,11 @@ public class PrintService {
     /** Probna stranica — za podešavanje IP-a i kodne stranice. */
     public void printTest(Printer printer) {
         try {
-            send(printer, formatter.testPage(label(printer), address(printer)));
+            boolean kitchen = printer == Printer.KITCHEN;
+            send(printer, formatter.testPage(label(printer), address(printer),
+                    kitchen ? settingsService.kitchenFontHeight() : 0,
+                    kitchen ? settingsService.kitchenFontWidth() : 2,
+                    kitchen ? settingsService.kitchenWordLength() : 0));
         } catch (IOException e) {
             throw new BusinessRuleException(problem(printer, e));
         }
@@ -240,28 +244,49 @@ public class PrintService {
                 return new PrinterCheck(label(printer), address, false,
                         "Printer '" + t.windowsName() + "' nije instaliran u Windowsima.");
             }
-            QueuedJobCount queued = service.getAttribute(QueuedJobCount.class);
-            if (queued != null && queued.getValue() > 0) {
-                return new PrinterCheck(label(printer), address, false,
-                        queued.getValue() + " posao/poslova čeka u Windows redu — printer možda ne ispisuje.");
+            // posao koji se upravo ispisuje je normalan — čekaj da se red isprazni,
+            // kao kod ispisa, a tek onda javi da je zapelo
+            int waiting = queuedJobs(service);
+            long deadline = System.currentTimeMillis() + props.usbConfirmMs();
+            while (waiting > 0 && System.currentTimeMillis() < deadline) {
+                sleep(300);
+                waiting = queuedJobs(service);
             }
-            return new PrinterCheck(label(printer), address, true, "Instaliran, red čekanja je prazan.");
+            if (waiting > 0) {
+                return new PrinterCheck(label(printer), address, false,
+                        waiting + " posao/poslova stoji u Windows redu duže od "
+                                + props.usbConfirmMs() / 1000 + " s — provjeri papir, napajanje i USB kabel.");
+            }
+            return new PrinterCheck(label(printer), address, true,
+                    waiting < 0 ? "Instaliran (Windows ne javlja red čekanja)." : "Instaliran, red čekanja je prazan.");
         }
         synchronized (this) {
-            try (Socket socket = new Socket()) {
-                socket.connect(new InetSocketAddress(t.host(), t.port()), props.timeoutMs());
-                String key = t.host() + ":" + t.port();
-                noStatusSupport.remove(key); // ručna provjera uvijek pita printer
-                String problem = readStatus(socket.getOutputStream(), socket.getInputStream(), key);
-                if (problem != null) return new PrinterCheck(label(printer), address, false, problem);
-                return new PrinterCheck(label(printer), address, true,
-                        noStatusSupport.contains(key)
-                                ? "Dostupan (printer ne javlja stanje papira)."
-                                : "Dostupan, papir u redu.");
-            } catch (IOException e) {
-                return new PrinterCheck(label(printer), address, false, problem(printer, e));
+            String key = t.host() + ":" + t.port();
+            IOException last = null;
+            // Datecs LAN modul treba trenutak nakon prethodne veze (npr. tiket upravo ispisan)
+            for (int attempt = 1; attempt <= 2; attempt++) {
+                try (Socket socket = new Socket()) {
+                    socket.connect(new InetSocketAddress(t.host(), t.port()), props.timeoutMs());
+                    noStatusSupport.remove(key); // ručna provjera uvijek pita printer
+                    String problem = readStatus(socket.getOutputStream(), socket.getInputStream(), key);
+                    if (problem != null) return new PrinterCheck(label(printer), address, false, problem);
+                    return new PrinterCheck(label(printer), address, true,
+                            noStatusSupport.contains(key)
+                                    ? "Dostupan (printer ne javlja stanje papira)."
+                                    : "Dostupan, papir u redu.");
+                } catch (IOException e) {
+                    last = e;
+                    if (attempt == 1) sleep(1000);
+                }
             }
+            return new PrinterCheck(label(printer), address, false, problem(printer, last));
         }
+    }
+
+    /** Broj poslova u Windows redu; -1 ako Windows to ne javlja. */
+    private static int queuedJobs(javax.print.PrintService service) {
+        QueuedJobCount q = service.getAttribute(QueuedJobCount.class);
+        return q == null ? -1 : q.getValue();
     }
 
     /** Imena printera instaliranih u Windowsima — za odabir šank printera u Adminu. */
@@ -291,7 +316,10 @@ public class PrintService {
 
     private byte[] format(List<Ticket> tickets) {
         ByteArrayOutputStream data = new ByteArrayOutputStream();
-        for (Ticket t : tickets) data.writeBytes(formatter.format(t));
+        // čita se pri svakom ispisu, bez restarta
+        int kitchenHeight = settingsService.kitchenFontHeight();
+        int kitchenWidth = settingsService.kitchenFontWidth();
+        for (Ticket t : tickets) data.writeBytes(formatter.format(t, kitchenHeight, kitchenWidth));
         return data.toByteArray();
     }
 
@@ -359,8 +387,18 @@ public class PrintService {
     private String readStatus(OutputStream out, InputStream in, String key) throws IOException {
         if (!props.statusCheck()) return null;
         if (key != null && noStatusSupport.contains(key)) return null;
-        while (in.available() > 0) in.read(); // počisti eventualne stare bajtove
 
+        // 1) Datecs (EP-2000 priručnik, naredba 77): ESC v -> jedan bajt stanja
+        Integer datecs = queryDatecs(out, in);
+        if (datecs != null) {
+            if ((datecs & 0x04) != 0) return "nema papira ili je otvoren poklopac";
+            if ((datecs & 0x20) != 0) return "zapeo je rezač papira";
+            if ((datecs & 0x08) != 0) return "pregrijana glava printera";
+            if ((datecs & 0x40) != 0) log.warn("Papir pri kraju na printeru {}", key);
+            return null;
+        }
+
+        // 2) ostali ESC/POS printeri: DLE EOT
         Integer offline = query(out, in, 2);
         Integer paper = query(out, in, 4);
         if (offline == null && paper == null && key != null) {
@@ -378,7 +416,35 @@ public class PrintService {
         return null;
     }
 
+    /**
+     * Datecs ESC v: bit2 nema papira / otvoren poklopac, bit3 pregrijano, bit5 rezač,
+     * bit6 papir pri kraju; bitovi 0, 4 i 7 se ne koriste (moraju biti 0).
+     * Bit4 = 1 je tipičan za DLE EOT odgovor drugih printera -> ne miješa se s njim.
+     */
+    private Integer queryDatecs(OutputStream out, InputStream in) throws IOException {
+        drain(in);
+        out.write(new byte[]{ESC, 'v'});
+        out.flush();
+        try {
+            int b = readWithTimeout(in);
+            if (b < 0 || (b & 0x91) != 0) {
+                log.debug("Printer vratio neočekivan bajt {} na ESC v", b);
+                return null;
+            }
+            return b;
+        } catch (SocketTimeoutException e) {
+            log.debug("Printer ne odgovara na ESC v");
+            return null;
+        }
+    }
+
+    /** Počisti zaostale bajtove (npr. zakašnjeli odgovor na prošli upit) da se ne pročitaju krivo. */
+    private static void drain(InputStream in) throws IOException {
+        while (in.available() > 0) in.read();
+    }
+
     private Integer query(OutputStream out, InputStream in, int n) throws IOException {
+        drain(in);
         out.write(new byte[]{DLE, EOT, (byte) n});
         out.flush();
         try {

@@ -250,3 +250,15 @@
   background: rgba(47, 179, 107, 0.2);
   color: #86e3ad;
 }
+
+/* otvorena dostava / za ponijeti — ista točkica kao na bloku "Dostava" kod stolova */
+.openDot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c98a52;
+  box-shadow: 0 0 6px rgba(201, 138, 82, 0.5);
+  vertical-align: middle;
+}

@@ -372,3 +372,73 @@
     max-height: none;
   }
 }
+
+/* ======================= MOBITEL (≤ 700 px) ======================= */
+@media (max-width: 700px) {
+  /* bez odabira: ne prikazuj prazan panel ispod liste */
+  .panel:has(.placeholder) {
+    display: none;
+  }
+
+  /*
+   * Uređivanje jela / priloga / pića preko cijelog ekrana (zatvara se X u
+   * zaglavlju editora). :not(:has()) -> stari preglednik bez :has() ostaje
+   * na panelu ispod liste, ništa se ne prekrije.
+   */
+  .panel:not(:has(.placeholder)) {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    max-height: none;
+    padding: max(14px, env(safe-area-inset-top)) 14px
+      max(20px, env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    animation: sheetIn 0.18s ease-out;
+  }
+
+  .pageTitle {
+    font-size: 1.15rem;
+  }
+
+  .toolbarActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .toolbarActions > button {
+    flex: 1;
+    min-height: 44px;
+  }
+
+  .closeBtn {
+    width: 44px;
+    height: 44px;
+    margin: -6px -4px 0 0;
+    border: 1px solid var(--card-border, #2e3742);
+    border-radius: 12px;
+    background: #232a33;
+    color: #e8edf3;
+    font-size: 1.6rem;
+  }
+
+  /* 16 px: iOS ne zumira stranicu kad se tipka */
+  .input {
+    font-size: 16px;
+  }
+}
+
+@keyframes sheetIn {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}

@@ -110,3 +110,17 @@ export const kat = [
     name: "K-T3",
   },
 ];
+
+// Reoni sa stolovima — isti na laptopu, tabletu i mobitelu
+export const REONS = [
+  { id: "unutra", name: "Unutra", tables: unutra },
+  { id: "terasa", name: "Terasa", tables: terasa },
+  { id: "kat", name: "Kat", tables: kat },
+];
+
+// Posebni blokovi: svaki klik je nova narudžba (dostava / za ponijeti).
+// short = kraći naziv za mobitel
+export const SPECIAL_BLOCKS = [
+  { id: "DOSTAVA", name: "Dostava Mišo šoMi", short: "Dostava", hint: "" },
+  { id: "PONIJETI", name: "Za ponijeti", short: "Za ponijeti", hint: "" },
+];

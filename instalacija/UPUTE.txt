@@ -1,0 +1,28 @@
+﻿MEGI DEA - UPUTE
+================
+
+POKRETANJE
+- Program se pokrece sam kad se upali racunalo (ako je tako odabrano kod instalacije),
+  ili preko precaca "Megi - pokreni" na radnoj povrsini.
+- Prozor programa je smanjen na traci - NE ZATVARAJ ga dok restoran radi.
+- Na ovom racunalu: precac "Megi - otvori" ili http://localhost:8080
+- Na tabletima: adresa iz C:\megi\adresa-za-tablete.txt (npr. http://192.168.1.10:8080)
+
+GASENJE
+- Zatvori prozor programa na traci (X). Ne gasi racunalo usred narudzbe.
+
+PODACI
+- Baza:      C:\megi\data\megi.mv.db
+- Backupi:   C:\megi\backup  (svaki dan u 22:45 i pri pokretanju)
+- Zapisnik:  C:\megi\logs\megi.log  (posalji ga ako nesto ne radi)
+
+VRACANJE BACKUPA
+1. Zatvori program.
+2. Pokreni C:\megi\vrati-backup.bat i odaberi backup.
+3. Ponovno pokreni program.
+
+NADOGRADNJA
+- Raspakiraj novi paket i pokreni instaliraj.bat - baza i backupi ostaju.
+
+PRINTERI
+- Admin -> Postavke -> Postavke printera: IP kuhinje, printer sanka, "Provjeri stanje", "Probni ispis".

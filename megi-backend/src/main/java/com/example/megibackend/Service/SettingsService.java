@@ -90,6 +90,40 @@ public class SettingsService {
                 notBlank(s.getBarWindowsName()) ? s.getBarWindowsName().trim() : null);
     }
 
+    /** Dopuštene veličine stavki na kuhinji (visina x širina). */
+    public static final String KITCHEN_FONT_DEFAULT = "2x2";
+    private static final java.util.Set<String> KITCHEN_FONTS = java.util.Set.of("2x2", "3x2", "4x3");
+
+    /** "2x2" | "3x2" | "4x3"; bilo što drugo (null, stara/nepoznata vrijednost) -> "2x2". */
+    @Transactional(readOnly = true)
+    public String kitchenFontSize() {
+        String v = current().getKitchenFontSize();
+        return v != null && KITCHEN_FONTS.contains(v) ? v : KITCHEN_FONT_DEFAULT;
+    }
+
+    /** Visina stavki na kuhinji kao množitelj: 2, 3 ili 4. */
+    @Transactional(readOnly = true)
+    public int kitchenFontHeight() {
+        return Character.getNumericValue(kitchenFontSize().charAt(0));
+    }
+
+    /** Širina stavki na kuhinji kao množitelj: 2 ili 3. */
+    @Transactional(readOnly = true)
+    public int kitchenFontWidth() {
+        return Character.getNumericValue(kitchenFontSize().charAt(2));
+    }
+
+    /** Zadano skraćivanje riječi na kuhinji (prvih 6 slova). */
+    public static final int KITCHEN_WORD_LENGTH_DEFAULT = 6;
+
+    /** Broj slova po riječi na kuhinjskom tiketu; 0 = bez skraćivanja. */
+    @Transactional(readOnly = true)
+    public int kitchenWordLength() {
+        Integer v = current().getKitchenWordLength();
+        if (v == null || v < 0) return KITCHEN_WORD_LENGTH_DEFAULT;
+        return v;
+    }
+
     @Transactional(readOnly = true)
     public String backupSecondaryDir() {
         String dir = current().getBackupSecondaryDir();
@@ -110,7 +144,9 @@ public class SettingsService {
                 nullToEmpty(bar.windowsName()),
                 nullToEmpty(bar.host()),
                 bar.port(),
-                nullToEmpty(backupSecondaryDir()));
+                nullToEmpty(backupSecondaryDir()),
+                kitchenFontSize(),
+                kitchenWordLength());
     }
 
     // ==================== IZMJENA ====================
@@ -135,6 +171,15 @@ public class SettingsService {
         if (r.barPort() != null) s.setBarPort(r.barPort());
 
         if (r.backupSecondaryDir() != null) s.setBackupSecondaryDir(blankToNull(r.backupSecondaryDir()));
+        if (r.kitchenFontSize() != null) s.setKitchenFontSize(r.kitchenFontSize());
+        if (r.kitchenWordLength() != null) {
+            int n = r.kitchenWordLength();
+            // 1-2 slova kuhar ne bi razumio ("Pi Ca")
+            if (n == 1 || n == 2) {
+                throw new BusinessRuleException("Skraćivanje: 0 (bez skraćivanja) ili od 3 do 30 slova.");
+            }
+            s.setKitchenWordLength(n);
+        }
 
         repository.save(s);
         return toResponse();

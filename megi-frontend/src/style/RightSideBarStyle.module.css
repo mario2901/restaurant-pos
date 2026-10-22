@@ -258,3 +258,66 @@
   font-weight: 600;
   word-break: break-word;
 }
+
+/* ======================= TABLET (701–1199 px) ======================= */
+@media (min-width: 701px) and (max-width: 1199px) {
+  .sidebar {
+    width: 38%;
+    min-width: 290px;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .ordersHeader {
+    gap: 8px;
+  }
+
+  .ordersTitle {
+    font-size: 0.98rem;
+  }
+
+  /* 4 filtera uvijek stanu u traku (i na uspravnom tabletu) */
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .tab {
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+    height: 32px;
+    padding: 0 4px;
+    font-size: 0.78rem;
+  }
+}
+
+/* ======================= MOBITEL (≤ 700 px) ======================= */
+@media (max-width: 700px) {
+  .ordersHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* 4 filtera u punoj širini, visoki za prst */
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 4px;
+    border-radius: 12px;
+  }
+
+  .tab {
+    justify-content: center;
+    height: 40px;
+    padding: 0 4px;
+    border-radius: 9px;
+    font-size: 0.85rem;
+  }
+
+  .tabActive,
+  .tabActive:hover {
+    background: #3d6a9e;
+  }
+}

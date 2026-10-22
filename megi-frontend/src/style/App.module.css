@@ -80,3 +80,35 @@ body {
 .profil:hover {
   border: 2px solid #4f7fb5;
 }
+
+/* ======================= TABLET (701–1199 px) ======================= */
+/* isti raspored kao laptop, samo manji razmaci */
+@media (min-width: 701px) and (max-width: 1199px) {
+  .app {
+    height: 100dvh;
+  }
+
+  .main {
+    padding: 12px;
+  }
+}
+
+/* ============ TABLET I LAPTOP: Profil pluta u kutu ============ */
+/* ne zauzima cijeli stupac lijevo -> stolovi dobiju tu širinu */
+@media (min-width: 701px) {
+  .global {
+    position: relative;
+  }
+
+  .profil {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 5;
+    width: 3.75rem;
+    height: 3.75rem;
+    margin: 0;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+}

@@ -39,6 +39,7 @@
 }
 
 .logout {
+  flex: none;
   color: #ff6b6b;
 }
 
@@ -50,4 +51,66 @@
   margin: 0;
   text-align: center;
   font-size: 1.4rem;
+}
+
+/* ======================= TABLET (701–1199 px) ======================= */
+@media (min-width: 701px) and (max-width: 1199px) {
+  .sideBar {
+    flex: 0 0 300px;
+    gap: 12px;
+    padding: 12px;
+  }
+}
+
+/*
+ * ======================= MOBITEL (≤ 700 px) =======================
+ * Traka se "otvori" (display: contents) pa se njeni dijelovi slažu s listom
+ * narudžbi u jedan stupac: natrag, ime, promet, izvještaji -> zatvorene
+ * narudžbe -> promjena PIN-a, odjava.
+ */
+@media (max-width: 700px) {
+  .sideBar {
+    display: contents;
+  }
+
+  .sideBar > * {
+    order: 0;
+    margin: 0 16px;
+  }
+
+  .sideBar > :nth-child(1) {
+    margin-top: max(16px, env(safe-area-inset-top));
+  }
+
+  .sideBar > :nth-child(n + 2) {
+    margin-top: 14px;
+  }
+
+  /* PIN i odjava ispod liste narudžbi */
+  .sideBar > :nth-child(n + 5) {
+    order: 2;
+  }
+
+  .sideBar > :last-child {
+    margin-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .nav {
+    justify-content: flex-start;
+  }
+
+  .navBtn {
+    flex: none;
+    height: 44px;
+    padding: 0 16px;
+  }
+
+  .logout {
+    width: calc(100% - 32px);
+  }
+
+  .name {
+    text-align: left;
+    font-size: 1.6rem;
+  }
 }

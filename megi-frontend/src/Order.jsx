@@ -1,78 +1,36 @@
-import { useContext, useState } from "react";
 import style from "./style/Order.module.css";
-import { OrderContext } from "./context/OrderContext";
-import useSubmitOrder from "./hooks/useSubmit";
-import { toSubmitRequest } from "./data/api";
-import { useMe } from "./hooks/useLogin";
-const NOTE_TABLES = ["DOSTAVA", "PONIJETI"];
-export const ORDER_NOTE_MAX = 120;
+import useOrderForm, { ORDER_NOTE_MAX } from "./hooks/useOrderForm";
+import { formatPrice } from "./data/menu";
 
-const formatPrice = (price) =>
-  `${Number(price).toFixed(2).replace(".", ",")} KM`;
+export { ORDER_NOTE_MAX };
 
-export default function Order({
-  table,
-
-  orderId,
-
-  onSent,
-}) {
+/** Košarica u desnoj traci (laptop i tablet). Mobitel ima MobileCart. */
+export default function Order({ table, orderId, onSent }) {
   const {
     items,
     totalPrice,
     totalCount,
+    isEmpty,
+    title,
+    hasNote,
+    note,
+    setNote,
+    noteLabel,
+    notePlaceholder,
+    canSend,
+    isPending,
+    isError,
+    error,
+    send: handleSend,
+    clear: handleClear,
     updateItemQuantity,
     removeItemFromOrder,
-    clearOrder,
-    finishOrder,
-  } = useContext(OrderContext);
-  const { data: user } = useMe();
-  const { mutate, isPending, isError, error, reset } = useSubmitOrder();
-  const isEmpty = items.length === 0;
-  const tableLabel = table?.label;
-  const hasNote = NOTE_TABLES.includes(tableLabel);
-  // "Dodaj još" na postojeću dostavu: predpopuni njenu napomenu
-  const [note, setNote] = useState(
-    () => table?.orders?.find((o) => o.id === orderId)?.note ?? "",
-  );
-  const canSend = !isEmpty && !isPending && tableLabel && user.id;
-
-  function handleSend() {
-    mutate(
-      toSubmitRequest({
-        items,
-        table: tableLabel,
-        userId: user.id,
-        orderId,
-        note: hasNote ? note : undefined,
-      }),
-      {
-        onSuccess: (result) => {
-          // result = { order, tickets, printed, printError } — backend je već poslao na printere
-          // Prvo tiketi (RightSideBar otvara pregled), pa povratak na stolove.
-          onSent?.(result);
-          finishOrder();
-        },
-      },
-    );
-  }
-
-  function handleClear() {
-    clearOrder();
-    setNote("");
-    reset();
-  }
+  } = useOrderForm({ table, orderId, onSent });
 
   return (
     <div className={style.order}>
       <div className={style.header}>
-        <h3 className={style.title}>
-          {tableLabel === "DOSTAVA"
-            ? "Dostava"
-            : tableLabel === "PONIJETI"
-              ? "Za ponijeti"
-              : `Stol ${tableLabel ?? ""}`}
-        </h3>
+        <h3 className={style.title}>{title}</h3>
         {!isEmpty && <span className={style.count}>{totalCount}</span>}
       </div>
 
@@ -140,7 +98,7 @@ export default function Order({
         {hasNote && (
           <label className={style.orderNote}>
             <span className={style.orderNoteLabel}>
-              {tableLabel === "DOSTAVA" ? "Adresa / napomena" : "Ime / telefon"}
+              {noteLabel}
               <span className={style.orderNoteCount}>
                 {note.length}/{ORDER_NOTE_MAX}
               </span>
@@ -151,11 +109,7 @@ export default function Order({
               value={note}
               maxLength={ORDER_NOTE_MAX}
               onChange={(e) => setNote(e.target.value)}
-              placeholder={
-                tableLabel === "DOSTAVA"
-                  ? "npr. Adresa, 061 123 456"
-                  : "npr. Ime, 063 111 222"
-              }
+              placeholder={notePlaceholder}
               disabled={isPending}
             />
           </label>

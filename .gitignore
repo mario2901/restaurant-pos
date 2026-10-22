@@ -22,3 +22,11 @@ meni-hrana_3.json
 
 # Editor
 .vscode/
+
+# Instalacijski paket (napravi-paket.bat)
+paket/
+Megi-paket.zip
+azuriranje/
+
+# Probne slike ispisa
+kuhinja-*.png

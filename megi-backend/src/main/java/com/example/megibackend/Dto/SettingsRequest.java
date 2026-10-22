@@ -24,5 +24,10 @@ public record SettingsRequest(
         @Size(max = 100) String barWindowsName,
         @Size(max = 100) String barHost,
         @Min(1) @Max(65535) Integer barPort,
-        @Size(max = 300) String backupSecondaryDir) {
+        @Size(max = 300) String backupSecondaryDir,
+        @Pattern(regexp = "^(2x2|3x2|4x3)$", message = "Veličina slova mora biti 2x2, 3x2 ili 4x3")
+        String kitchenFontSize,
+        @Min(value = 0, message = "Broj slova ne može biti negativan")
+        @Max(value = 30, message = "Najviše 30 slova")
+        Integer kitchenWordLength) {
 }

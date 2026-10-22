@@ -49,3 +49,12 @@ tasks.named('processResources') {
         into 'static'
     }
 }
+
+// Jedan izvršni JAR: build/libs/megi.jar (backend + frontend iz megi-frontend/dist)
+tasks.named('bootJar') {
+    archiveFileName = 'megi.jar'
+}
+// bez dodatnog "-plain" JAR-a koji nam ne treba
+tasks.named('jar') {
+    enabled = false
+}

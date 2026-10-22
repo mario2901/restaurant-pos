@@ -8,6 +8,8 @@ import { OrderContext } from "./context/OrderContext.jsx";
 
 import { useNavigate } from "react-router";
 import { useMe } from "./hooks/useLogin.js";
+import { useIsPhone } from "./hooks/useMediaQuery.js";
+import MobileApp from "./mobile/MobileApp.jsx";
 
 const targetName = (table) => {
   if (!table) return "stolove";
@@ -19,6 +21,8 @@ const targetName = (table) => {
 export default function App() {
   const { data: user } = useMe();
   const [reon, setReon] = useState("unutra");
+  // mobitel ima svoj raspored (mockup); tablet i laptop dijele ovaj ispod
+  const isPhone = useIsPhone();
 
   const navigate = useNavigate();
 
@@ -35,26 +39,35 @@ export default function App() {
   }
   return (
     <div className={styles.app}>
-      <div className={styles.global}>
-        {!table && (
-          <button className={styles.profil} onClick={handleProfil}>
-            Profil
-          </button>
-        )}
-
-        <main className={styles.main}>
-          {table ? (
-            <Menu table={table} onBack={() => selectTable(null)} />
-          ) : (
-            <Tables
-              reon={reon}
-              onReonChange={setReon}
-              onSelectTable={selectTable}
-            />
+      {isPhone ? (
+        <MobileApp
+          reon={reon}
+          onReonChange={setReon}
+          user={user}
+          onProfile={handleProfil}
+        />
+      ) : (
+        <div className={styles.global}>
+          {!table && (
+            <button className={styles.profil} onClick={handleProfil}>
+              Profil
+            </button>
           )}
-        </main>
-        <RightSideBar />
-      </div>
+
+          <main className={styles.main}>
+            {table ? (
+              <Menu table={table} onBack={() => selectTable(null)} />
+            ) : (
+              <Tables
+                reon={reon}
+                onReonChange={setReon}
+                onSelectTable={selectTable}
+              />
+            )}
+          </main>
+          <RightSideBar />
+        </div>
+      )}
 
       <OrderDetailsModal
         isOpen={!!pendingTable}

@@ -1,14 +1,14 @@
 import styles from "./style/FoodItem.module.css";
 import useFood from "./hooks/useFood.js";
 import useAddons from "./hooks/useAddons.js";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { OrderContext } from "./context/OrderContext.jsx";
 import OrderItem from "./OrderItem.jsx";
 import { MAIN_FOOD_CATEGORIES, formatPrice } from "./data/menu.js";
 
 const TABS = [...MAIN_FOOD_CATEGORIES, "Ostalo"];
 const tabOf = (item) =>
   MAIN_FOOD_CATEGORIES.includes(item.category) ? item.category : "Ostalo";
-
 
 function FoodCard({
   item,
@@ -18,11 +18,11 @@ function FoodCard({
   onClose,
   onEdit,
   selected,
+  inCart = 0,
 }) {
   const ref = useRef(null);
   const open = orderable && portion != null;
 
-  
   useEffect(() => {
     if (open) {
       ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -51,6 +51,11 @@ function FoodCard({
         <h3 className={styles.name}>{item.name}</h3>
         {item.available === false && (
           <span className={styles.badge}>Skinuto</span>
+        )}
+        {orderable && inCart > 0 && !open && (
+          <span className={styles.inCart} aria-label={`U košarici: ${inCart}`}>
+            ×{inCart}
+          </span>
         )}
         {open && (
           <button
@@ -111,6 +116,7 @@ function FoodCard({
  * orderable=true  -> Food (narudžba): samo dostupna jela, odabir porcije, prilozi u košaricu
  * orderable=false -> Admin: sva jela i prilozi (i skinuti s menija);
  *                    s onEditFood / onEditAddon klik otvara uređivanje
+ * query           -> pretraga po nazivu i opisu kroz SVE kategorije (mobitel)
  */
 export default function FoodItem({
   orderable = false,
@@ -119,6 +125,7 @@ export default function FoodItem({
   onEditAddon,
   selectedFoodId = null,
   selectedAddonId = null,
+  query = "",
 }) {
   const [activeTab, setActiveTab] = useState("Pizza");
   // otvorena kartica: { id, portion } — samo jedna u isto vrijeme
@@ -127,11 +134,27 @@ export default function FoodItem({
   const { data: addons = [], isPending: addonsPending } = useAddons({
     all: !orderable,
   });
+  const { items: cartItems } = useContext(OrderContext);
+
+  // koliko komada svakog jela je u košarici (sve porcije zajedno) — značka "×2"
+  const inCartById = useMemo(() => {
+    const map = {};
+    for (const line of cartItems) {
+      if (line.type !== "FOOD") continue;
+      map[line.itemId] = (map[line.itemId] ?? 0) + line.amount;
+    }
+    return map;
+  }, [cartItems]);
 
   if (isPending) return <p>Učitavanje…</p>;
   if (error) return <p>{error.message}</p>;
 
-  const visibleFood = food.filter((item) => tabOf(item) === activeTab);
+  const q = query.trim().toLowerCase();
+  const visibleFood = q
+    ? food.filter((item) =>
+        `${item.name} ${item.description ?? ""}`.toLowerCase().includes(q),
+      )
+    : food.filter((item) => tabOf(item) === activeTab);
 
   function changeTab(tab) {
     setActiveTab(tab);
@@ -140,26 +163,34 @@ export default function FoodItem({
 
   return (
     <>
-      <div className={styles.categoryFilter}>
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            className={`${styles.tab} ${tab === activeTab ? styles.tabActive : ""}`}
-            onClick={() => changeTab(tab)}
-          >
-            {tab}{" "}
-            <span className={styles.count}>
-              {food.filter((item) => tabOf(item) === tab).length}
-            </span>
-          </button>
-        ))}
-      </div>
+      {!q && (
+        <div className={styles.categoryFilter}>
+          {TABS.map((tab) => (
+            <button
+              key={tab}
+              className={`${styles.tab} ${
+                tab === activeTab && !q ? styles.tabActive : ""
+              }`}
+              onClick={() => changeTab(tab)}
+            >
+              {tab}{" "}
+              <span className={styles.count}>
+                {food.filter((item) => tabOf(item) === tab).length}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className={styles.layout}>
         {/* LIJEVO: jela */}
         <section>
           {visibleFood.length === 0 ? (
-            <p className={styles.empty}>Nema jela u ovoj kategoriji.</p>
+            <p className={styles.empty}>
+              {q
+                ? "Nema jela koje odgovara pretrazi."
+                : "Nema jela u ovoj kategoriji."}
+            </p>
           ) : (
             <div className={styles.grid}>
               {visibleFood.map((item) => (
@@ -174,6 +205,7 @@ export default function FoodItem({
                   onClose={() => setSelection(null)}
                   onEdit={onEditFood}
                   selected={item.id === selectedFoodId}
+                  inCart={inCartById[item.id] ?? 0}
                 />
               ))}
             </div>
@@ -201,9 +233,7 @@ export default function FoodItem({
                         addon.id === selectedAddonId ? styles.addonSelected : ""
                       } ${unavailable ? styles.cardUnavailable : ""}`}
                       onClick={() =>
-                        orderable
-                          ? handleAddAddon?.(addon)
-                          : onEditAddon(addon)
+                        orderable ? handleAddAddon?.(addon) : onEditAddon(addon)
                       }
                     >
                       {addon.name}

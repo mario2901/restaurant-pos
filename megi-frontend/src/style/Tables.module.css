@@ -204,3 +204,53 @@
   color: #e08a8a;
   font-size: 0.85rem;
 }
+
+/* ======================= TABLET (701–1199 px) ======================= */
+@media (min-width: 701px) and (max-width: 1199px) {
+  /* mjesto za plutajući gumb Profil lijevo gore */
+  .special {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 220px));
+    gap: 10px;
+    padding: 4px 0 14px 72px;
+  }
+
+  .specialBtn {
+    min-height: 64px;
+    padding: 8px 12px;
+  }
+
+  .specialName {
+    font-size: 17px;
+  }
+
+  .buttons {
+    gap: 8px;
+  }
+
+  .buttons button {
+    width: 92px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: 15px;
+  }
+
+  /* stolovi popune širinu s malim razmacima umjesto 2 stupca s velikim rupama */
+  .tables {
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    justify-content: stretch;
+    gap: 10px;
+    padding: 16px 0;
+  }
+
+  .tables button {
+    font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* uspravni tablet / uski prozor: stolovi ne smiju biti preveliki */
+@media (min-width: 701px) and (max-width: 1199px) and (orientation: portrait) {
+  .tables {
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  }
+}

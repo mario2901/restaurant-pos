@@ -153,6 +153,15 @@ export default function DrinksStocks() {
           ) : (
             <>
               <div className={styles.panelHead}>
+                {/* samo na mobitelu, gdje je panel preko cijelog ekrana */}
+                <button
+                  type="button"
+                  className={styles.sheetClose}
+                  onClick={() => setSelectedId(null)}
+                  aria-label="Zatvori"
+                >
+                  &times;
+                </button>
                 <span className={styles.eyebrow}>Dopuna zalihe</span>
                 <h2 className={styles.panelTitle}>{selected.name}</h2>
                 <span className={styles.panelMeta}>
